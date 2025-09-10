@@ -1,8 +1,7 @@
 
 🚀 Final-SQL-Project-WHO
 🚀 Final-SQL-Project-WHO
-<img width="900" height="900" alt="WHO Project Banner" src="https://github.com/user-attachments/assets/b55bc8d5-67fb-4d50-9700-36fbed7e7db1" />
-
+<img width="156" height="148" alt="image" src="https://github.com/user-attachments/assets/0cfaeae2-e81e-4695-8bb8-b85975b9e2d6" />
 
 
 
