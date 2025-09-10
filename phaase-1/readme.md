@@ -1,6 +1,8 @@
 🚀 Final-SQL-Project-WHO
 🚀 Final-SQL-Project-WHO
-<img width="900" height="900" alt="image" src="https://github.com/user-attachments/assets/b55bc8d5-67fb-4d50-9700-36fbed7e7db1" />
+
+<img width="156" height="148" alt="image" src="https://github.com/user-attachments/assets/a12391e5-8c0d-45a4-8384-5bb15ec1efd4" />
+
 
 
 
