@@ -39,7 +39,25 @@ DELETE FROM countries WHERE country_name='Nigeria';
 ALTER TABLE hospitals ADD COLUMN rating DECIMAL(3,1) DEFAULT 4.5;
 SELECT hospital_name,capacity FROM hospitals WHERE capacity>1500;
 drop table countries;
+SELECT country_name, continent FROM countries WHERE continent = 'Asia';
 
+SELECT country_name, gdp_per_capita FROM countries WHERE gdp_per_capita > 50000;
+
+SELECT country_name,population FROM countries WHERE continent='Asia';
+
+SELECT country_name,gdp_per_capita FROM countries ORDER BY gdp_per_capita DESC LIMIT 5;
+
+SELECT country_name, population FROM countries ORDER BY population DESC LIMIT 5;
+
+SELECT continent, AVG(literacy_rate) AS avg_literacy FROM countries GROUP BY continent;
+
+SELECT country_name, life_expectancy FROM countries WHERE life_expectancy > 80;
+
+UPDATE countries SET gdp_per_capita = 2800.75 WHERE country_name = 'India';
+
+DELETE FROM countries WHERE country_name = 'Nigeria';
+
+INSERT INTO countries VALUES (11, 'Canada', 'North America', 39000000, 53000.80, 99.00, 82.20, 95000000000.00, 'Ottawa', 'English');
 
 #===========================================================================================================================================
 
@@ -78,11 +96,22 @@ SELECT hospital_name,city FROM hospitals WHERE capacity>1500;
 SELECT hospital_name,established_year FROM hospitals ORDER BY established_year ASC LIMIT 5;
 SELECT specialization,COUNT(*) AS total FROM hospitals GROUP BY specialization;
 UPDATE hospitals SET capacity=capacity+200 WHERE hospital_id=1;
-DELETE FROM hospitals WHERE hospital_name='University College Hospital';
-ALTER TABLE hospitals ADD COLUMN accreditation VARCHAR(50) DEFAULT 'WHO Certified';
-SELECT country_id,AVG(capacity) AS avg_capacity FROM hospitals GROUP BY country_id HAVING AVG(capacity)>1500;
-SELECT hospital_name,director_name FROM hospitals WHERE city LIKE 'B%';
-SELECT COUNT(*) FROM hospitals WHERE specialization='General';
+ALTER TABLE hospitals ADD COLUMN rating DECIMAL(3,1);
+ALTER TABLE hospitals MODIFY COLUMN capacity BIGINT;
+CREATE INDEX idx_city ON hospitals(city);
+TRUNCATE TABLE hospitals;
+DROP INDEX idx_city ON hospitals;
+UPDATE hospitals SET capacity = 3500 WHERE hospital_id = 1;
+DELETE FROM hospitals WHERE hospital_id = 5;
+INSERT INTO hospitals VALUES (11, 'Apollo Hospitals', 1, 'Chennai', 2500, 'Multispecialty', 1983, 'Dr. Prathap Reddy', '+91-44-28293333', 'apollo@apollohospitals.com', 4.7);
+INSERT INTO hospitals VALUES (12, 'Fortis Hospital', 1, 'Mumbai', 2000, 'Cardiology', 1996, 'Dr. Ashutosh Raghuvanshi', '+91-22-67676767', 'fortis@mumbai.in', 4.5);
+UPDATE hospitals SET rating = 4.8 WHERE hospital_name = 'Mayo Clinic';
+SELECT hospital_name, city, capacity FROM hospitals;
+SELECT hospital_name, specialization FROM hospitals WHERE capacity > 2000;
+SELECT COUNT(*) AS total_hospitals FROM hospitals;
+SELECT city, AVG(capacity) AS avg_capacity FROM hospitals GROUP BY city;
+SELECT hospital_name, rating FROM hospitals ORDER BY rating DESC LIMIT 5;
+
 
 
 #=========================================================================================================================================
@@ -126,6 +155,16 @@ ALTER TABLE doctors ADD COLUMN license_number VARCHAR(50) UNIQUE;
 SELECT hospital_id,AVG(experience) AS avg_exp FROM doctors GROUP BY hospital_id HAVING AVG(experience)>8;
 SELECT name,joining_date FROM doctors WHERE joining_date>'2015-01-01';
 SELECT COUNT(*) FROM doctors WHERE specialization='Neurology';
+ALTER TABLE doctors ADD COLUMN address VARCHAR(150);
+ALTER TABLE doctors MODIFY COLUMN salary DECIMAL(14,2);
+CREATE INDEX idx_specialty ON doctors(specialty);
+TRUNCATE TABLE doctors;
+DROP INDEX idx_specialty ON doctors;
+UPDATE doctors SET salary = salary + 5000 WHERE specialty = 'Cardiology';
+DELETE FROM doctors WHERE doctor_id = 10;
+INSERT INTO doctors VALUES (11, 'Liam', 'Taylor', 'M', 'ENT', 2, 9, '9876543220', 'liam.taylor@example.com', 125000.00, 'Mumbai');
+
+SELECT specialty, AVG(salary) AS avg_salary FROM doctors GROUP BY specialty;
 
 
 #========================================================================================================================================
@@ -168,6 +207,17 @@ DELETE FROM patients WHERE status='Critical' AND country_id=5;
 ALTER TABLE patients ADD COLUMN blood_group VARCHAR(5);
 SELECT disease_id,COUNT(patient_id) AS cases FROM patients GROUP BY disease_id HAVING COUNT(patient_id)>1;
 SELECT first_name,last_name,dob FROM patients WHERE YEAR(dob)<1980;
+ALTER TABLE patients ADD COLUMN phone_number VARCHAR(15);
+ALTER TABLE patients MODIFY status VARCHAR(30);
+CREATE INDEX idx_status ON patients(status);
+TRUNCATE TABLE patients;
+DROP INDEX idx_status ON patients;
+UPDATE patients SET status='Recovered' WHERE patient_id=4;
+DELETE FROM patients WHERE patient_id=10;
+INSERT INTO patients VALUES (11,'Lucas','White','M','1992-07-11',3,2,'2025-07-01','2025-07-10','Recovered');
+SELECT * FROM patients;
+SELECT first_name, last_name, status FROM patients WHERE status='Recovered';
+
 
 
 #============================================================================================================================
@@ -207,6 +257,18 @@ ALTER TABLE diseases ADD COLUMN treatment_type VARCHAR(100);
 SELECT transmission_mode,COUNT(disease_id) FROM diseases GROUP BY transmission_mode;
 SELECT disease_name,mortality_rate FROM diseases WHERE mortality_rate>10.00;
 SELECT disease_name,discovered_by FROM diseases WHERE vaccine_available=FALSE;
+ALTER TABLE diseases ADD COLUMN affected_region VARCHAR(100);
+ALTER TABLE diseases MODIFY COLUMN disease_name VARCHAR(150);
+CREATE INDEX idx_category ON diseases(category);
+RENAME TABLE diseases TO world_diseases;
+TRUNCATE TABLE world_diseases;
+UPDATE world_diseases SET mortality_rate = 3.00 WHERE disease_name = 'COVID-19';
+DELETE FROM world_diseases WHERE disease_name = 'Polio';
+SELECT disease_name, mortality_rate FROM world_diseases WHERE mortality_rate > 10;
+SELECT category, COUNT(*) AS total_diseases FROM world_diseases GROUP BY category;
+SELECT disease_name, transmission_mode FROM world_diseases WHERE vaccine_available = TRUE;
+SELECT AVG(mortality_rate) AS avg_mortality FROM world_diseases;
+
 
 #=================================================================================================================================
 
@@ -246,6 +308,16 @@ ALTER TABLE vaccines ADD COLUMN price DECIMAL(10,2) DEFAULT 0.00;
 SELECT disease_id,AVG(efficacy_rate) FROM vaccines GROUP BY disease_id;
 SELECT vaccine_name,doses_required FROM vaccines WHERE doses_required>2;
 SELECT vaccine_name,expiry_period FROM vaccines WHERE expiry_period>=24;
+select * from vaccines;
+select vaccine_name,efficacy_rate from vaccines order by efficacy_rate desc;
+select manufacturer,count(vaccine_id) from vaccines group by manufacturer;
+select vaccine_name,approval_year from vaccines where approval_year<2000;
+update vaccines set efficacy_rate=92.00 where vaccine_name='AstraZeneca COVID-19';
+delete from vaccines where efficacy_rate<50.00;
+alter table vaccines add column price decimal(10,2) default 0.00;
+select disease_id,avg(efficacy_rate) from vaccines group by disease_id;
+select vaccine_name,doses_required from vaccines where doses_required>2;
+select vaccine_name,expiry_period from vaccines where expiry_period>=24;
 
 #============================================================================================================================
 -- 7. Vaccination_Centers
@@ -263,7 +335,7 @@ CREATE TABLE vaccination_centers (
     FOREIGN KEY (country_id) REFERENCES countries(country_id)
 );
 
--- 7. Vaccination_Centers
+
 INSERT INTO vaccination_centers VALUES
 (1, 'Central Vaccination Hub', 1, 'Geneva', 500, '08:00', '18:00', '+41223334444', 'Dr. Alice White', 2005),
 (2, 'National Immunization Center', 2, 'Delhi', 1000, '07:00', '19:00', '+911123456789', 'Dr. Raj Patel', 2010),
@@ -286,6 +358,17 @@ ALTER TABLE vaccination_centers ADD COLUMN email VARCHAR(100);
 SELECT AVG(capacity_per_day) AS avg_capacity FROM vaccination_centers;
 SELECT city,COUNT(center_id) AS centers FROM vaccination_centers GROUP BY city HAVING COUNT(center_id)>1;
 SELECT center_name,opening_time,closing_time FROM vaccination_centers WHERE opening_time<'08:00';
+select * from vaccination_centers;
+select center_name,capacity_per_day from vaccination_centers order by capacity_per_day desc;
+select country_id,count(center_id) as total_centers from vaccination_centers group by country_id;
+select center_name,city from vaccination_centers where established_year<2010;
+update vaccination_centers set capacity_per_day=capacity_per_day+200 where city='Delhi';
+delete from vaccination_centers where capacity_per_day<300;
+alter table vaccination_centers add column email varchar(100);
+select avg(capacity_per_day) as avg_capacity from vaccination_centers;
+select city,count(center_id) as centers from vaccination_centers group by city having count(center_id)>1;
+select center_name,opening_time,closing_time from vaccination_centers where opening_time<'08:00';
+
 
 
 #===========================================================================================================================
@@ -329,6 +412,18 @@ SELECT administered_by,COUNT(*) FROM vaccination_records GROUP BY administered_b
 SELECT vaccine_id,COUNT(*) FROM vaccination_records GROUP BY vaccine_id HAVING COUNT(*)>2;
 ALTER TABLE vaccination_records ADD COLUMN verified BOOLEAN DEFAULT FALSE;
 SELECT patient_id,batch_number FROM vaccination_records WHERE vaccination_date>'2024-06-01';
+select * from vaccination_records;
+select patient_id,vaccine_id,vaccination_date from vaccination_records;
+select count(*) from vaccination_records where dose_number=1;
+select center_id,count(*) from vaccination_records group by center_id;
+select vaccine_id,avg(dose_number) from vaccination_records group by vaccine_id;
+update vaccination_records set remarks='Follow up needed' where side_effects<>'None';
+delete from vaccination_records where record_id=10;
+select administered_by,count(*) from vaccination_records group by administered_by;
+select vaccine_id,count(*) from vaccination_records group by vaccine_id having count(*)>2;
+alter table vaccination_records add column verified boolean default false;
+select patient_id,batch_number from vaccination_records where vaccination_date>'2024-06-01';
+
 
 #============================================================================================================================
 
@@ -370,6 +465,18 @@ SELECT lead_scientist,COUNT(*) FROM research_projects GROUP BY lead_scientist;
 ALTER TABLE research_projects ADD COLUMN collaborators INT DEFAULT 0;
 SELECT project_name,end_date FROM research_projects ORDER BY end_date DESC;
 SELECT project_name,findings FROM research_projects WHERE status='Completed';
+select * from research_projects;
+select project_name,budget from research_projects where status='Ongoing';
+select disease_id,count(*) from research_projects group by disease_id;
+select avg(budget) from research_projects;
+update research_projects set status='Extended' where end_date>'2025-12-31';
+delete from research_projects where project_id=5;
+select funding_source,sum(budget) from research_projects group by funding_source;
+select lead_scientist,count(*) from research_projects group by lead_scientist;
+alter table research_projects add column collaborators int default 0;
+select project_name,end_date from research_projects order by end_date desc;
+select project_name,findings from research_projects where status='Completed';
+
 
 #=============================================================================================================================
 -- 10. Funding
@@ -410,6 +517,18 @@ SELECT currency,SUM(amount) FROM funding GROUP BY currency;
 ALTER TABLE funding ADD COLUMN confirmed BOOLEAN DEFAULT TRUE;
 SELECT donor_name,MAX(amount) FROM funding GROUP BY donor_name;
 SELECT project_id,SUM(amount) FROM funding GROUP BY project_id HAVING SUM(amount)>1000000;
+select * from funding;
+select donor_name,amount from funding order by amount desc;
+select country_id,sum(amount) from funding group by country_id;
+select project_id,count(*) from funding group by project_id;
+update funding set amount=amount+50000 where donor_name='WHO';
+delete from funding where amount<500000;
+alter table funding add column transaction_id varchar(20);
+select donor_name,avg(amount) from funding group by donor_name;
+select funding_date,amount from funding where funding_date>'2023-06-01';
+select donor_name,sum(amount) from funding group by donor_name having sum(amount)>800000;
+select project_id,remarks from funding where currency='USD';
+
 
 
 #=================================================================================================================================
@@ -452,6 +571,17 @@ SELECT media_channels,COUNT(*) FROM awareness_campaigns GROUP BY media_channels;
 ALTER TABLE awareness_campaigns ADD COLUMN evaluation TEXT;
 SELECT campaign_name,end_date FROM awareness_campaigns ORDER BY end_date DESC;
 SELECT campaign_name,target_audience FROM awareness_campaigns WHERE start_date>'2024-06-01';
+select * from awareness_campaigns;
+SELECT campaign_name,budget FROM awareness_campaigns WHERE budget>600000;
+SELECT country_id,COUNT(*) FROM awareness_campaigns GROUP BY country_id;
+SELECT organizer,SUM(budget) FROM awareness_campaigns GROUP BY organizer;
+UPDATE awareness_campaigns SET outcome='Successful' WHERE campaign_id=4;
+DELETE FROM awareness_campaigns WHERE campaign_id=7;
+SELECT AVG(budget) FROM awareness_campaigns;
+SELECT media_channels,COUNT(*) FROM awareness_campaigns GROUP BY media_channels;
+ALTER TABLE awareness_campaigns ADD COLUMN evaluation TEXT;
+SELECT campaign_name,end_date FROM awareness_campaigns ORDER BY end_date DESC;
+
 
 
 #================================================================================================================================
@@ -494,6 +624,17 @@ SELECT AVG(established_year) FROM laboratories;
 ALTER TABLE laboratories ADD COLUMN capacity INT DEFAULT 100;
 SELECT lab_name,phone FROM laboratories WHERE research_focus='Research';
 SELECT city,COUNT(*) FROM laboratories GROUP BY city HAVING COUNT(*)>1;
+select * from laboratories;
+SELECT lab_name,city FROM laboratories WHERE established_year>2005;
+SELECT country_id,COUNT(*) FROM laboratories GROUP BY country_id;
+SELECT head_scientist,COUNT(*) FROM laboratories GROUP BY head_scientist;
+UPDATE laboratories SET email='updated@lab.org' WHERE lab_id=2;
+DELETE FROM laboratories WHERE lab_id=10;
+SELECT accreditation,COUNT(*) FROM laboratories GROUP BY accreditation;
+SELECT AVG(established_year) FROM laboratories;
+ALTER TABLE laboratories ADD COLUMN capacity INT DEFAULT 100;
+SELECT lab_name,phone FROM laboratories WHERE research_focus='Research';
+
 
 #====================================================================================================================================
 -- 13. Lab_Tests
@@ -535,6 +676,17 @@ SELECT AVG(cost) FROM lab_tests;
 ALTER TABLE lab_tests ADD COLUMN verified varchar(70);
 SELECT test_name,result FROM lab_tests ORDER BY test_date DESC;
 SELECT test_name,COUNT(*) FROM lab_tests GROUP BY test_name HAVING COUNT(*)>1;
+select * from lab_tests;
+SELECT test_name,cost FROM lab_tests WHERE cost>1000;
+SELECT patient_id,COUNT(*) FROM lab_tests GROUP BY patient_id;
+SELECT lab_id,AVG(cost) FROM lab_tests GROUP BY lab_id;
+UPDATE lab_tests SET remarks='Recheck needed' WHERE result='Slightly High';
+DELETE FROM lab_tests WHERE test_id=8;
+SELECT tested_by,COUNT(*) FROM lab_tests GROUP BY tested_by;
+SELECT AVG(cost) FROM lab_tests;
+ALTER TABLE lab_tests ADD COLUMN verified varchar(70);
+SELECT test_name,result FROM lab_tests ORDER BY test_date DESC;
+
 
 
 #==================================================================================================================================
@@ -575,6 +727,17 @@ SELECT managed_by,COUNT(*) FROM health_programs GROUP BY managed_by;
 ALTER TABLE health_programs ADD COLUMN participants INT DEFAULT 0;
 SELECT program_name,end_date FROM health_programs ORDER BY end_date;
 SELECT program_name,outcome FROM health_programs WHERE outcome='Ongoing';
+select * from health_programs;
+SELECT program_name,budget FROM health_programs WHERE budget>5000000;
+SELECT target_region,COUNT(*) FROM health_programs GROUP BY target_region;
+SELECT funded_by,SUM(budget) FROM health_programs GROUP BY funded_by;
+UPDATE health_programs SET outcome='Extended' WHERE end_date>'2026-01-01';
+DELETE FROM health_programs WHERE program_id=4;
+SELECT AVG(budget) FROM health_programs;
+SELECT managed_by,COUNT(*) FROM health_programs GROUP BY managed_by;
+ALTER TABLE health_programs ADD COLUMN participants INT DEFAULT 0;
+SELECT program_name,end_date FROM health_programs ORDER BY end_date;
+
 
 
 #===================================================================================================================================
@@ -616,6 +779,17 @@ SELECT gender,COUNT(*) FROM program_beneficiaries GROUP BY gender;
 ALTER TABLE program_beneficiaries ADD COLUMN contact VARCHAR(20);
 SELECT name,received_date FROM program_beneficiaries WHERE received_date BETWEEN '2025-02-01' AND '2025-06-30';
 SELECT status,COUNT(*) FROM program_beneficiaries GROUP BY status HAVING COUNT(*)>2;
+select * from program_beneficiaries;
+SELECT name,age,gender FROM program_beneficiaries WHERE country_id=1;
+SELECT benefit_type,COUNT(*) FROM program_beneficiaries GROUP BY benefit_type;
+SELECT program_id,AVG(age) FROM program_beneficiaries GROUP BY program_id;
+UPDATE program_beneficiaries SET status='Completed' WHERE beneficiary_id=7;
+DELETE FROM program_beneficiaries WHERE remarks='Recovering';
+SELECT gender,COUNT(*) FROM program_beneficiaries GROUP BY gender;
+ALTER TABLE program_beneficiaries ADD COLUMN contact VARCHAR(20);
+SELECT name,received_date FROM program_beneficiaries WHERE received_date BETWEEN '2025-02-01' AND '2025-06-30';
+SELECT status,COUNT(*) FROM program_beneficiaries GROUP BY status HAVING COUNT(*)>2;
+
 
 
 #=================================================================================================================================
@@ -655,6 +829,17 @@ SELECT job_role,COUNT(*) FROM health_workers GROUP BY job_role;
 SELECT gender,AVG(experience_years) FROM health_workers GROUP BY gender;
 SELECT MAX(salary) AS highest_salary FROM health_workers;
 SELECT job_role,AVG(salary) FROM health_workers GROUP BY job_role HAVING AVG(salary)>50000;
+select * from health_workers;
+SELECT first_name,last_name,job_role FROM health_workers WHERE salary>60000;
+SELECT country_id,AVG(salary) FROM health_workers GROUP BY country_id;
+UPDATE health_workers SET salary=salary*1.05 WHERE experience_years>10;
+DELETE FROM health_workers WHERE job_role='Paramedic';
+ALTER TABLE health_workers ADD COLUMN hire_date DATE;
+SELECT job_role,COUNT(*) FROM health_workers GROUP BY job_role;
+SELECT gender,AVG(experience_years) FROM health_workers GROUP BY gender;
+SELECT MAX(salary) AS highest_salary FROM health_workers;
+SELECT job_role,AVG(salary) FROM health_workers GROUP BY job_role HAVING AVG(salary)>50000;
+
 
 
 #===================================================================================================================================
@@ -695,6 +880,16 @@ SELECT country_id,AVG(recovery_rate) FROM disease_outbreaks GROUP BY country_id;
 SELECT disease_id,MAX(cases_reported) FROM disease_outbreaks GROUP BY disease_id;
 SELECT disease_id,AVG(deaths) FROM disease_outbreaks GROUP BY disease_id HAVING AVG(deaths)>20;
 SELECT outbreak_id,end_date-start_date AS duration FROM disease_outbreaks;
+select * from disease_outbreaks;
+SELECT disease_id,country_id,cases_reported FROM disease_outbreaks WHERE cases_reported>300;
+SELECT disease_id,SUM(deaths) FROM disease_outbreaks GROUP BY disease_id;
+UPDATE disease_outbreaks SET response_measures='Vaccination and Quarantine' WHERE outbreak_id=3;
+DELETE FROM disease_outbreaks WHERE recovery_rate<90.00;
+ALTER TABLE disease_outbreaks ADD COLUMN reported_by VARCHAR(100);
+SELECT country_id,AVG(recovery_rate) FROM disease_outbreaks GROUP BY country_id;
+SELECT disease_id,MAX(cases_reported) FROM disease_outbreaks GROUP BY disease_id;
+SELECT disease_id,AVG(deaths) FROM disease_outbreaks GROUP BY disease_id HAVING AVG(deaths)>20;
+SELECT outbreak_id,end_date-start_date AS duration FROM disease_outbreaks;
 
 
 #====================================================================================================================================
@@ -725,6 +920,16 @@ INSERT INTO medical_supplies
 (9, 'IV Fluids', 'Medical', 2000, 5.00, 3, '2025-07-01', '2026-07-01', 'Cool place', 'Sterile'),
 (10, 'Defibrillators', 'Equipment', 20, 1200.00, 4, '2025-01-15', '2035-01-15', 'Indoor, cool', 'Emergency use');
 #queries:
+select * from medical_supplies;
+SELECT supply_name,quantity,unit_price FROM medical_supplies WHERE category='PPE';
+SELECT supplier_id,SUM(quantity) FROM medical_supplies GROUP BY supplier_id;
+UPDATE medical_supplies SET quantity=quantity-100 WHERE supply_id=1;
+DELETE FROM medical_supplies WHERE expiry_date<'2026-01-01';
+ALTER TABLE medical_supplies ADD COLUMN batch_no VARCHAR(50);
+SELECT category,AVG(unit_price) FROM medical_supplies GROUP BY category;
+SELECT MAX(unit_price) AS max_price FROM medical_supplies;
+SELECT category,SUM(quantity) FROM medical_supplies GROUP BY category HAVING SUM(quantity)>500;
+SELECT supply_name,expiry_date-manufacture_date AS shelf_life FROM medical_supplies;
 select * from medical_supplies;
 SELECT supply_name,quantity,unit_price FROM medical_supplies WHERE category='PPE';
 SELECT supplier_id,SUM(quantity) FROM medical_supplies GROUP BY supplier_id;
@@ -775,6 +980,16 @@ SELECT state,COUNT(*) FROM suppliers GROUP BY state;
 SELECT MAX(supplier_id) AS latest_supplier FROM suppliers;
 SELECT city,COUNT(*) FROM suppliers GROUP BY city HAVING COUNT(*)>1;
 SELECT supplier_name,email FROM suppliers WHERE email LIKE '%.com';
+select * from suppliers;
+SELECT supplier_name,contact_name,phone FROM suppliers WHERE country_id=1;
+SELECT country_id,COUNT(*) FROM suppliers GROUP BY country_id;
+UPDATE suppliers SET city='New Delhi' WHERE supplier_id=5;
+DELETE FROM suppliers WHERE city='Rio';
+ALTER TABLE suppliers ADD COLUMN website VARCHAR(100);
+SELECT state,COUNT(*) FROM suppliers GROUP BY state;
+SELECT MAX(supplier_id) AS latest_supplier FROM suppliers;
+SELECT city,COUNT(*) FROM suppliers GROUP BY city HAVING COUNT(*)>1;
+SELECT supplier_name,email FROM suppliers WHERE email LIKE '%.com';
 
 #==================================================================================================================================
 -- 20. Training_Programs
@@ -804,6 +1019,16 @@ INSERT INTO training_programs
 (9, 'Field Surgery', '2025-09-01', '2025-09-10', 'Surgery', 'Dr. Thomas', 9, 15, 15000.00, 'Completed'),
 (10, 'Nutrition Education', '2025-10-01', '2025-10-15', 'Nutrition', 'Dr. Green', 10, 50, 5000.00, 'Successful');
 #queries:
+select * from training_programs;
+SELECT training_name,participants FROM training_programs WHERE budget>6000;
+SELECT country_id,AVG(participants) FROM training_programs GROUP BY country_id;
+UPDATE training_programs SET outcome='Extended' WHERE training_id=8;
+DELETE FROM training_programs WHERE participants<20;
+ALTER TABLE training_programs ADD COLUMN sponsor VARCHAR(100);
+SELECT topic,COUNT(*) FROM training_programs GROUP BY topic;
+SELECT MAX(budget) AS max_budget FROM training_programs;
+SELECT topic,AVG(budget) FROM training_programs GROUP BY topic HAVING AVG(budget)>6000;
+SELECT training_name,end_date-start_date AS duration FROM training_programs;
 select * from training_programs;
 SELECT training_name,participants FROM training_programs WHERE budget>6000;
 SELECT country_id,AVG(participants) FROM training_programs GROUP BY country_id;
@@ -855,6 +1080,17 @@ SELECT gender,COUNT(*) FROM participants GROUP BY gender;
 SELECT MAX(age) AS oldest FROM participants;
 SELECT role,AVG(age) FROM participants GROUP BY role HAVING AVG(age)>30;
 SELECT name,email FROM participants WHERE email LIKE '%example.com';
+select * from participants;
+SELECT name,age,role FROM participants WHERE role='Doctor';
+SELECT training_id,COUNT(*) FROM participants GROUP BY training_id;
+UPDATE participants SET remarks='Excellent' WHERE participant_id=5;
+DELETE FROM participants WHERE role='Technician';
+ALTER TABLE participants ADD COLUMN attendance VARCHAR(20);
+SELECT gender,COUNT(*) FROM participants GROUP BY gender;
+SELECT MAX(age) AS oldest FROM participants;
+SELECT role,AVG(age) FROM participants GROUP BY role HAVING AVG(age)>30;
+SELECT name,email FROM participants WHERE email LIKE '%example.com';
+
 
 
 #================================================================================================================================
@@ -895,6 +1131,17 @@ SELECT disaster_type,COUNT(*) FROM emergency_responses GROUP BY disaster_type;
 SELECT MAX(affected_population) AS worst_case FROM emergency_responses;
 SELECT disaster_type,AVG(relief_funds) FROM emergency_responses GROUP BY disaster_type HAVING AVG(relief_funds)>2000000;
 SELECT response_id,end_date-start_date AS duration FROM emergency_responses;
+select * from emergency_responses;
+SELECT disaster_type,affected_population FROM emergency_responses WHERE affected_population>50000;
+SELECT country_id,SUM(relief_funds) FROM emergency_responses GROUP BY country_id;
+UPDATE emergency_responses SET outcome='Completed' WHERE disaster_type='Flood';
+DELETE FROM emergency_responses WHERE affected_population<10000;
+ALTER TABLE emergency_responses ADD COLUMN response_time VARCHAR(50);
+SELECT coordinator,COUNT(*) FROM emergency_responses GROUP BY coordinator;
+SELECT MAX(relief_funds) AS max_funds FROM emergency_responses;
+SELECT disaster_type,AVG(relief_funds) FROM emergency_responses GROUP BY disaster_type HAVING AVG(relief_funds)>3000000;
+SELECT start_date,end_date FROM emergency_responses ORDER BY start_date;
+SELECT country_id,COUNT(*) FROM emergency_responses GROUP BY country_id;
 
 #=====================================================================================================================================
 
@@ -925,6 +1172,16 @@ INSERT INTO who_staff (staff_id, first_name, last_name, gender, job_title, depar
 (9, 'Toby', 'Flenderson', 'M', 'HR Manager', 'Human Resources', 9, '+778899001', 't.flenderson@who.int', 75000.00),
 (10, 'Erin', 'Hannon', 'F', 'Assistant', 'Administration', 10, '+445566778', 'e.hannon@who.int', 60000.00);
 #queries:
+select * from who_staff;
+SELECT first_name,last_name,job_title FROM who_staff WHERE gender='F';
+SELECT department,AVG(salary) AS avg_salary FROM who_staff GROUP BY department;
+SELECT country_id,COUNT(staff_id) AS total_staff FROM who_staff GROUP BY country_id;
+SELECT * FROM who_staff ORDER BY salary DESC LIMIT 3;
+UPDATE who_staff SET salary=salary+5000 WHERE job_title='Analyst';
+DELETE FROM who_staff WHERE last_name='Howard';
+ALTER TABLE who_staff ADD COLUMN hire_date DATE DEFAULT '2020-01-01';
+SELECT job_title,MAX(salary) FROM who_staff GROUP BY job_title;
+SELECT department,COUNT(staff_id) FROM who_staff GROUP BY department HAVING COUNT(staff_id)>1;
 select * from who_staff;
 SELECT first_name,last_name,job_title FROM who_staff WHERE gender='F';
 SELECT department,AVG(salary) AS avg_salary FROM who_staff GROUP BY department;
@@ -974,6 +1231,16 @@ DELETE FROM reports WHERE category='Nutrition';
 ALTER TABLE reports ADD COLUMN reviewed_by VARCHAR(100);
 SELECT language,COUNT(report_id) FROM reports GROUP BY language;
 SELECT category,MAX(pages) FROM reports GROUP BY category HAVING MAX(pages)>100;
+select * from reports;
+SELECT title,author,publish_date FROM reports WHERE category='Vaccination';
+SELECT category,COUNT(report_id) AS total_reports FROM reports GROUP BY category;
+SELECT country_id,AVG(pages) AS avg_pages FROM reports GROUP BY country_id;
+SELECT * FROM reports ORDER BY publish_date DESC LIMIT 5;
+UPDATE reports SET language='French' WHERE report_id=5;
+DELETE FROM reports WHERE category='Nutrition';
+ALTER TABLE reports ADD COLUMN reviewed_by VARCHAR(100);
+SELECT language,COUNT(report_id) FROM reports GROUP BY language;
+SELECT category,MAX(pages) FROM reports GROUP BY category HAVING MAX(pages)>100;
 
 #================================================================================================================================
 -- 25. Global_Statistics
@@ -1011,3 +1278,13 @@ DELETE FROM global_statistics WHERE year=2015;
 ALTER TABLE global_statistics ADD COLUMN data_verified BOOLEAN DEFAULT TRUE;
 SELECT year,global_death_rate FROM global_statistics WHERE global_death_rate>7.5;
 SELECT * FROM global_statistics ORDER BY global_life_expectancy DESC LIMIT 1;
+select * from global_statistics;
+SELECT year,global_population,global_life_expectancy FROM global_statistics WHERE global_death_rate>7;
+SELECT top_disease,COUNT(stat_id) AS occurrences FROM global_statistics GROUP BY top_disease;
+SELECT year,MAX(global_health_budget) FROM global_statistics GROUP BY year;
+SELECT year,global_vaccinations FROM global_statistics ORDER BY global_vaccinations DESC LIMIT 3;
+UPDATE global_statistics SET global_death_rate=6.5 WHERE year=2024;
+DELETE FROM global_statistics WHERE year=2015;
+ALTER TABLE global_statistics ADD COLUMN data_source VARCHAR(100) DEFAULT 'WHO';
+SELECT year,AVG(global_life_expectancy) FROM global_statistics GROUP BY year;
+SELECT top_disease,MAX(total_disease_cases) FROM global_statistics GROUP BY top_disease;
