@@ -1,0 +1,1027 @@
+create database PROJECTS;
+use PROJECTS;
+
+-- 1. Countries
+CREATE TABLE countries (
+    country_id INT PRIMARY KEY,
+    country_name VARCHAR(100) NOT NULL,
+    continent VARCHAR(50),
+    population BIGINT,
+    gdp_per_capita DECIMAL(12,2),
+    literacy_rate DECIMAL(5,2),
+    life_expectancy DECIMAL(5,2),
+    health_budget DECIMAL(15,2),
+    capital_city VARCHAR(100),
+    official_language VARCHAR(50)
+);
+INSERT INTO countries (
+    country_id, country_name, continent, population, gdp_per_capita, literacy_rate, life_expectancy, health_budget, capital_city, official_language
+) VALUES
+(1, 'India', 'Asia', 1428600000, 2500.50, 77.70, 69.40, 95000000000.00, 'New Delhi', 'Hindi'),
+(2, 'United States', 'North America', 334000000, 74000.20, 99.00, 79.10, 450000000000.00, 'Washington D.C.', 'English'),
+(3, 'China', 'Asia', 1412000000, 12600.70, 96.80, 77.30, 320000000000.00, 'Beijing', 'Mandarin'),
+(4, 'Brazil', 'South America', 214000000, 9700.90, 93.20, 75.40, 68000000000.00, 'Brasília', 'Portuguese'),
+(5, 'Nigeria', 'Africa', 223800000, 2300.30, 62.00, 54.30, 12000000000.00, 'Abuja', 'English'),
+(6, 'Germany', 'Europe', 84000000, 50200.60, 99.00, 81.10, 160000000000.00, 'Berlin', 'German'),
+(7, 'Japan', 'Asia', 125000000, 42000.50, 99.00, 84.50, 180000000000.00, 'Tokyo', 'Japanese'),
+(8, 'Australia', 'Oceania', 26000000, 62000.80, 99.00, 83.40, 90000000000.00, 'Canberra', 'English'),
+(9, 'South Africa', 'Africa', 60500000, 6800.40, 95.30, 65.80, 22000000000.00, 'Pretoria', 'English'),
+(10, 'France', 'Europe', 67000000, 46500.75, 99.00, 82.30, 150000000000.00, 'Paris', 'French');
+
+#queries:
+
+SELECT * FROM countries;
+SELECT country_name,population FROM countries WHERE continent='Asia';
+SELECT country_name,gdp_per_capita FROM countries ORDER BY gdp_per_capita DESC LIMIT 5;
+SELECT continent,AVG(life_expectancy) AS avg_life FROM countries GROUP BY continent;
+UPDATE countries SET health_budget=health_budget+1000000000 WHERE country_name='India';
+DELETE FROM countries WHERE country_name='Nigeria';
+ALTER TABLE hospitals ADD COLUMN rating DECIMAL(3,1) DEFAULT 4.5;
+SELECT hospital_name,capacity FROM hospitals WHERE capacity>1500;
+drop table countries;
+#===========================================================================================================================================
+
+-- 2. Hospitals
+CREATE TABLE hospitals (
+    hospital_id INT PRIMARY KEY,
+    hospital_name VARCHAR(150) NOT NULL,
+    country_id INT,
+    city VARCHAR(100),
+    capacity INT,
+    specialization VARCHAR(100),
+    established_year INT,
+    director_name VARCHAR(100),
+    phone VARCHAR(20),
+    email VARCHAR(100),
+    FOREIGN KEY (country_id) REFERENCES countries(country_id)
+);
+INSERT INTO hospitals (
+    hospital_id, hospital_name, country_id, city, capacity,
+    specialization, established_year, director_name, phone, email
+) VALUES
+(1, 'All India Institute of Medical Sciences', 1, 'New Delhi', 3000, 'General', 1956, 'Dr. Randeep Guleria', '+91-11-26588500', 'aiims@india.gov.in'),
+(2, 'Mayo Clinic', 2, 'Rochester', 2000, 'Multispecialty', 1889, 'Dr. Gianrico Farrugia', '+1-507-284-2511', 'contact@mayo.edu'),
+(3, 'Peking Union Medical College Hospital', 3, 'Beijing', 1500, 'General', 1921, 'Dr. Li Ning', '+86-10-6529-5261', 'pumch@china.cn'),
+(4, 'Hospital Israelita Albert Einstein', 4, 'São Paulo', 1200, 'General', 1955, 'Dr. Sidney Klajner', '+55-11-2151-1233', 'contact@einstein.br'),
+(5, 'University College Hospital', 5, 'Ibadan', 1000, 'General', 1957, 'Dr. Jesse Otegbayo', '+234-2-2411690', 'uch@ng.org'),
+(6, 'Charité – Universitätsmedizin', 6, 'Berlin', 3000, 'Research & General', 1710, 'Prof. Heyo Kroemer', '+49-30-450-50', 'contact@charite.de'),
+(7, 'Tokyo University Hospital', 7, 'Tokyo', 1500, 'General', 1858, 'Dr. Naoto Uemura', '+81-3-3815-5411', 'tokyohosp@jp.jp'),
+(8, 'Royal Prince Alfred Hospital', 8, 'Sydney', 1000, 'General', 1882, 'Dr. Teresa Anderson', '+61-2-9515-6111', 'rpa@health.nsw.gov.au'),
+(9, 'Groote Schuur Hospital', 9, 'Cape Town', 1000, 'Trauma & General', 1938, 'Dr. Bhavna Patel', '+27-21-404-9111', 'gsh@health.gov.za'),
+(10, 'Hôpital de la Pitié-Salpêtrière', 10, 'Paris', 1600, 'General', 1656, 'Prof. Olivier Lyon-Caen', '+33-1-42-16-00-00', 'hopital@aphp.fr');
+
+#queies:
+select * from hospitals;
+SELECT hospital_name,city FROM hospitals WHERE capacity>1500;
+SELECT hospital_name,established_year FROM hospitals ORDER BY established_year ASC LIMIT 5;
+SELECT specialization,COUNT(*) AS total FROM hospitals GROUP BY specialization;
+UPDATE hospitals SET capacity=capacity+200 WHERE hospital_id=1;
+ALTER TABLE hospitals ADD COLUMN rating DECIMAL(3,1);
+ALTER TABLE hospitals MODIFY COLUMN capacity BIGINT;
+CREATE INDEX idx_city ON hospitals(city);
+TRUNCATE TABLE hospitals;
+
+
+#=========================================================================================================================================
+-- 3. Doctors
+CREATE TABLE doctors (
+    doctor_id INT PRIMARY KEY,
+    first_name VARCHAR(50),
+    last_name VARCHAR(50),
+    gender CHAR(1) CHECK (gender IN ('M', 'F')),
+    specialty VARCHAR(100),
+    hospital_id INT,
+    experience_years INT,
+    phone VARCHAR(20),
+    email VARCHAR(100),
+    salary DECIMAL(12,2),
+    FOREIGN KEY (hospital_id) REFERENCES hospitals(hospital_id)
+);
+INSERT INTO doctors (
+    doctor_id, first_name, last_name, gender, specialty, hospital_id,
+    experience_years, phone, email, salary
+)
+VALUES
+(1, 'John', 'Smith', 'M', 'Cardiology', 1, 15, '9876543210', 'john.smith@example.com', 150000.00),
+(2, 'Emily', 'Johnson', 'F', 'Neurology', 2, 10, '9876543211', 'emily.johnson@example.com', 140000.00),
+(3, 'Michael', 'Brown', 'M', 'Pediatrics', 3, 8, '9876543212', 'michael.brown@example.com', 120000.00),
+(4, 'Sophia', 'Davis', 'F', 'Oncology', 4, 12, '9876543213', 'sophia.davis@example.com', 145000.00),
+(5, 'Daniel', 'Wilson', 'M', 'Orthopedics', 5, 20, '9876543214', 'daniel.wilson@example.com', 160000.00),
+(6, 'Olivia', 'Martinez', 'F', 'Dermatology', 1, 7, '9876543215', 'olivia.martinez@example.com', 110000.00),
+(7, 'James', 'Garcia', 'M', 'General Surgery', 2, 18, '9876543216', 'james.garcia@example.com', 155000.00),
+(8, 'Ava', 'Rodriguez', 'F', 'Gynecology', 3, 11, '9876543217', 'ava.rodriguez@example.com', 135000.00),
+(9, 'William', 'Lee', 'M', 'Psychiatry', 4, 9, '9876543218', 'william.lee@example.com', 125000.00),
+(10, 'Mia', 'Walker', 'F', 'Ophthalmology', 5, 14, '9876543219', 'mia.walker@example.com', 142000.00);
+
+#queries:
+SELECT name,specialization FROM doctors WHERE experience>10;
+SELECT specialization,COUNT(*) AS total_doctors FROM doctors GROUP BY specialization;
+SELECT name,salary FROM doctors ORDER BY salary DESC LIMIT 5;
+UPDATE doctors SET salary=salary*1.1 WHERE specialization='Cardiology';
+DELETE FROM doctors WHERE status='Inactive';
+ALTER TABLE doctors ADD COLUMN license_number VARCHAR(50) UNIQUE;
+SELECT specialty, AVG(salary) AS avg_salary FROM doctors GROUP BY specialty;
+trunacte table doctors;
+
+#========================================================================================================================================
+-- 4. Patients
+CREATE TABLE patients (
+    patient_id INT PRIMARY KEY,
+    first_name VARCHAR(50),
+    last_name VARCHAR(50),
+    gender CHAR(1) CHECK (gender IN ('M', 'F')),
+    dob DATE,
+    country_id INT,
+    disease_id INT,
+    admission_date DATE,
+    discharge_date DATE,
+    status VARCHAR(50),
+    FOREIGN KEY (country_id) REFERENCES countries(country_id),
+    FOREIGN KEY (disease_id) REFERENCES diseases(disease_id)
+);
+INSERT INTO patients (
+    patient_id, first_name, last_name, gender, dob, country_id, disease_id,
+    admission_date, discharge_date, status
+) VALUES
+(1, 'John', 'Smith', 'M', '1985-04-12', 1, 2, '2025-07-15', '2025-07-25', 'Recovered'),
+(2, 'Mary', 'Johnson', 'F', '1990-09-22', 2, 3, '2025-06-10', '2025-06-20', 'Recovered'),
+(3, 'David', 'Lee', 'M', '1978-11-05', 3, 1, '2025-08-01', NULL, 'Under Treatment'),
+(4, 'Sophia', 'Brown', 'F', '2000-02-18', 4, 4, '2025-07-28', NULL, 'Critical'),
+(5, 'James', 'Wilson', 'M', '1965-06-30', 5, 5, '2025-07-12', '2025-07-19', 'Recovered'),
+(6, 'Emma', 'Martinez', 'F', '1988-12-14', 6, 6, '2025-06-02', '2025-06-15', 'Recovered'),
+(7, 'Liam', 'Garcia', 'M', '1995-03-09', 7, 2, '2025-07-05', '2025-07-14', 'Recovered'),
+(8, 'Olivia', 'Anderson', 'F', '1972-08-27', 8, 3, '2025-07-20', NULL, 'Under Observation'),
+(9, 'Noah', 'Thomas', 'M', '1983-01-16', 9, 4, '2025-06-18', '2025-06-28', 'Recovered'),
+(10, 'Ava', 'Taylor', 'F', '1998-05-04', 10, 1, '2025-07-10', '2025-07-18', 'Recovered');
+#queries:
+SELECT first_name,last_name,status FROM patients WHERE status='Recovered';
+SELECT gender,COUNT(patient_id) AS total FROM patients GROUP BY gender;
+SELECT country_id,COUNT(patient_id) AS total_patients FROM patients GROUP BY country_id;
+SELECT * FROM patients WHERE discharge_date IS NULL;
+UPDATE patients SET status='Recovered' WHERE patient_id=4;
+DELETE FROM patients WHERE status='Critical' AND country_id=5;
+ALTER TABLE patients ADD COLUMN blood_group VARCHAR(5);
+SELECT disease_id,COUNT(patient_id) AS cases FROM patients GROUP BY disease_id HAVING COUNT(patient_id)>1;
+SELECT * FROM patients;
+SELECT first_name, last_name, status FROM patients WHERE status='Recovered';
+
+
+
+#============================================================================================================================
+-- 5. Diseases
+CREATE TABLE diseases (
+    disease_id INT PRIMARY KEY,
+    disease_name VARCHAR(100) NOT NULL,
+    category VARCHAR(50),
+    transmission_mode VARCHAR(50),
+    symptoms TEXT,
+    mortality_rate DECIMAL(5,2),
+    discovered_year INT,
+    discovered_by VARCHAR(100),
+    vaccine_available BOOLEAN,
+    notes TEXT
+);
+-- 5. Diseases
+INSERT INTO diseases VALUES
+(1, 'COVID-19', 'Viral', 'Airborne', 'Fever, cough, fatigue', 2.10, 2019, 'Dr. Li Wenliang', TRUE, 'Pandemic declared in 2020'),
+(2, 'Malaria', 'Parasitic', 'Mosquito', 'Fever, chills, sweating', 0.30, 1880, 'Charles Laveran', TRUE, 'Common in tropical regions'),
+(3, 'Ebola', 'Viral', 'Body fluids', 'Fever, bleeding, weakness', 50.00, 1976, 'Peter Piot', FALSE, 'High mortality rate'),
+(4, 'Tuberculosis', 'Bacterial', 'Airborne', 'Cough, weight loss, fever', 15.00, 1882, 'Robert Koch', TRUE, 'Global health concern'),
+(5, 'HIV/AIDS', 'Viral', 'Sexual, blood', 'Weight loss, fever, infections', 80.00, 1983, 'Luc Montagnier', FALSE, 'Antiretroviral treatment available'),
+(6, 'Influenza', 'Viral', 'Airborne', 'Fever, cough, sore throat', 0.10, 1933, 'Smith, Andrewes & Laidlaw', TRUE, 'Annual outbreaks'),
+(7, 'Cholera', 'Bacterial', 'Waterborne', 'Diarrhea, dehydration', 1.00, 1854, 'Filippo Pacini', TRUE, 'Linked to poor sanitation'),
+(8, 'Measles', 'Viral', 'Airborne', 'Rash, fever, cough', 0.20, 1954, 'John Enders', TRUE, 'Preventable by MMR vaccine'),
+(9, 'Polio', 'Viral', 'Fecal-oral', 'Paralysis, fever', 5.00, 1908, 'Karl Landsteiner', TRUE, 'Near eradication'),
+(10, 'Dengue', 'Viral', 'Mosquito', 'Fever, rash, joint pain', 1.50, 1943, 'Ren Kimura', FALSE, 'No specific treatment');
+#queries:
+select * from disease;
+SELECT disease_name,mortality_rate FROM diseases ORDER BY mortality_rate DESC LIMIT 5;
+SELECT category,COUNT(disease_id) AS total FROM diseases GROUP BY category;
+SELECT disease_name,discovered_year FROM diseases WHERE discovered_year<1900;
+UPDATE diseases SET vaccine_available=TRUE WHERE disease_name='Dengue';
+DELETE FROM diseases WHERE disease_name='Cholera' AND mortality_rate<2.0;
+ALTER TABLE diseases ADD COLUMN treatment_type VARCHAR(100);
+SELECT transmission_mode,COUNT(disease_id) FROM diseases GROUP BY transmission_mode;
+SELECT disease_name,mortality_rate FROM diseases WHERE mortality_rate>10.00;
+SELECT disease_name,discovered_by FROM diseases WHERE vaccine_available=FALSE;
+ALTER TABLE diseases ADD COLUMN affected_region VARCHAR(100);
+ALTER TABLE diseases MODIFY COLUMN disease_name VARCHAR(150);
+CREATE INDEX idx_category ON diseases(category);
+RENAME TABLE diseases TO world_diseases;
+TRUNCATE TABLE world_diseases;
+
+#=================================================================================================================================
+
+-- 6. Vaccines
+CREATE TABLE vaccines (
+    vaccine_id INT PRIMARY KEY,
+    vaccine_name VARCHAR(100),
+    manufacturer VARCHAR(100),
+    disease_id INT,
+    approval_year INT,
+    doses_required INT,
+    storage_temp DECIMAL(5,2),
+    efficacy_rate DECIMAL(5,2),
+    expiry_period INT,
+    notes TEXT,
+    FOREIGN KEY (disease_id) REFERENCES diseases(disease_id)
+);
+INSERT INTO vaccines VALUES
+(1, 'Pfizer-BioNTech COVID-19', 'Pfizer', 1, 2020, 2, -70.00, 95.00, 6, 'Widely distributed globally'),
+(2, 'AstraZeneca COVID-19', 'AstraZeneca', 1, 2020, 2, 2.00, 76.00, 6, 'Easier storage'),
+(3, 'RTS,S', 'GlaxoSmithKline', 2, 2021, 4, 2.00, 39.00, 24, 'First malaria vaccine'),
+(4, 'BCG', 'Various', 4, 1921, 1, 2.00, 70.00, 36, 'Prevents TB in children'),
+(5, 'MMR', 'Merck', 8, 1971, 2, 2.00, 97.00, 36, 'Measles, mumps, rubella'),
+(6, 'Oral Polio Vaccine', 'WHO', 9, 1961, 3, 2.00, 99.00, 12, 'Key in polio eradication'),
+(7, 'Influenza Vaccine', 'Various', 6, 1945, 1, 2.00, 60.00, 12, 'Annual flu prevention'),
+(8, 'Dengvaxia', 'Sanofi Pasteur', 10, 2015, 3, 2.00, 60.00, 24, 'Dengue prevention'),
+(9, 'Cholera Vaccine', 'Shantha Biotechnics', 7, 1991, 2, 2.00, 85.00, 24, 'For high-risk regions'),
+(10, 'Ebola Vaccine', 'Merck', 3, 2019, 1, -60.00, 97.00, 24, 'For outbreak control');
+#queries:
+select * from vaccines;
+SELECT vaccine_name,efficacy_rate FROM vaccines ORDER BY efficacy_rate DESC;
+SELECT manufacturer,COUNT(vaccine_id) FROM vaccines GROUP BY manufacturer;
+SELECT vaccine_name,approval_year FROM vaccines WHERE approval_year<2000;
+UPDATE vaccines SET efficacy_rate=92.00 WHERE vaccine_name='AstraZeneca COVID-19';
+DELETE FROM vaccines WHERE efficacy_rate<50.00;
+ALTER TABLE vaccines ADD COLUMN price DECIMAL(10,2) DEFAULT 0.00;
+SELECT disease_id,AVG(efficacy_rate) FROM vaccines GROUP BY disease_id;
+SELECT vaccine_name,doses_required FROM vaccines WHERE doses_required>2;
+SELECT vaccine_name,expiry_period FROM vaccines WHERE expiry_period>=24;
+select * from vaccines;
+#============================================================================================================================
+-- 7. Vaccination_Centers
+CREATE TABLE vaccination_centers (
+    center_id INT PRIMARY KEY,
+    center_name VARCHAR(150),
+    country_id INT,
+    city VARCHAR(100),
+    capacity_per_day INT,
+    opening_time TIME,
+    closing_time TIME,
+    contact_number VARCHAR(20),
+    incharge_name VARCHAR(100),
+    established_year INT,
+    FOREIGN KEY (country_id) REFERENCES countries(country_id)
+);
+
+
+INSERT INTO vaccination_centers VALUES
+(1, 'Central Vaccination Hub', 1, 'Geneva', 500, '08:00', '18:00', '+41223334444', 'Dr. Alice White', 2005),
+(2, 'National Immunization Center', 2, 'Delhi', 1000, '07:00', '19:00', '+911123456789', 'Dr. Raj Patel', 2010),
+(3, 'City Health Clinic', 3, 'Nairobi', 300, '08:30', '17:00', '+254722334455', 'Dr. Grace Njeri', 2000),
+(4, 'Public Health Centre', 4, 'London', 700, '08:00', '18:00', '+442033445566', 'Dr. James Brown', 2012),
+(5, 'Community Care Hospital', 5, 'New York', 800, '09:00', '17:00', '+12123334444', 'Dr. Maria Lopez', 2008),
+(6, 'Regional Vaccine Depot', 6, 'Rio de Janeiro', 600, '08:00', '16:00', '+552122334455', 'Dr. Paulo Silva', 2015),
+(7, 'Provincial Immunization Centre', 7, 'Sydney', 400, '07:30', '17:00', '+61222334455', 'Dr. Emily Harris', 2018),
+(8, 'Capital Health Unit', 8, 'Tokyo', 900, '08:00', '18:00', '+81322334455', 'Dr. Kenji Watanabe', 2011),
+(9, 'Metropolitan Health Office', 9, 'Paris', 650, '08:00', '17:30', '+33122334455', 'Dr. Sophie Martin', 2009),
+(10, 'Island Health Centre', 10, 'Honolulu', 200, '09:00', '15:00', '+180822334455', 'Dr. John Carter', 2014);
+#queries:
+select * from vaccination_centers;
+SELECT center_name,capacity_per_day FROM vaccination_centers ORDER BY capacity_per_day DESC;
+SELECT country_id,COUNT(center_id) AS total_centers FROM vaccination_centers GROUP BY country_id;
+SELECT center_name,city FROM vaccination_centers WHERE established_year<2010;
+UPDATE vaccination_centers SET capacity_per_day=capacity_per_day+200 WHERE city='Delhi';
+DELETE FROM vaccination_centers WHERE capacity_per_day<300;
+ALTER TABLE vaccination_centers ADD COLUMN email VARCHAR(100);
+SELECT AVG(capacity_per_day) AS avg_capacity FROM vaccination_centers;
+SELECT city,COUNT(center_id) AS centers FROM vaccination_centers GROUP BY city HAVING COUNT(center_id)>1;
+SELECT center_name,opening_time,closing_time FROM vaccination_centers WHERE opening_time<'08:00';
+select * from vaccination_centers;
+
+
+#===========================================================================================================================
+
+-- 8. Vaccination_Records
+CREATE TABLE vaccination_records (
+    record_id INT PRIMARY KEY,
+    patient_id INT,
+    vaccine_id INT,
+    center_id INT,
+    dose_number INT,
+    vaccination_date DATE,
+    batch_number VARCHAR(50),
+    administered_by VARCHAR(100),
+    side_effects TEXT,
+    remarks TEXT,
+    FOREIGN KEY (patient_id) REFERENCES patients(patient_id),
+    FOREIGN KEY (vaccine_id) REFERENCES vaccines(vaccine_id),
+    FOREIGN KEY (center_id) REFERENCES vaccination_centers(center_id)
+);
+INSERT INTO vaccination_records VALUES
+(1, 1, 1, 1, 1, '2024-01-10', 'BATCH001', 'Nurse Alice', 'Mild fever', 'No complications'),
+(2, 2, 2, 2, 1, '2024-02-12', 'BATCH002', 'Nurse Ben', 'None', 'Patient healthy'),
+(3, 3, 1, 3, 2, '2024-03-15', 'BATCH003', 'Nurse Carla', 'Sore arm', 'Follow-up in 2 weeks'),
+(4, 4, 3, 1, 1, '2024-04-18', 'BATCH004', 'Dr. David', 'None', 'All good'),
+(5, 5, 4, 2, 1, '2024-05-20', 'BATCH005', 'Nurse Emily', 'Headache', 'Mild symptom'),
+(6, 6, 1, 4, 1, '2024-06-25', 'BATCH006', 'Nurse Frank', 'None', 'No concerns'),
+(7, 7, 2, 5, 2, '2024-07-28', 'BATCH007', 'Nurse Grace', 'Mild rash', 'Resolved in 1 day'),
+(8, 8, 3, 3, 1, '2024-08-30', 'BATCH008', 'Dr. Henry', 'None', 'Stable'),
+(9, 9, 4, 2, 1, '2024-09-05', 'BATCH009', 'Nurse Ivy', 'Fatigue', 'Advised rest'),
+(10, 10, 1, 1, 3, '2024-10-10', 'BATCH010', 'Nurse Jack', 'None', 'No side effects');
+#queries:
+select * from vaccination_records;
+SELECT patient_id,vaccine_id,vaccination_date FROM vaccination_records;
+SELECT COUNT(*) FROM vaccination_records WHERE dose_number=1;
+SELECT center_id,COUNT(*) FROM vaccination_records GROUP BY center_id;
+SELECT vaccine_id,AVG(dose_number) FROM vaccination_records GROUP BY vaccine_id;
+UPDATE vaccination_records SET remarks='Follow up needed' WHERE side_effects<>'None';
+DELETE FROM vaccination_records WHERE record_id=10;
+SELECT administered_by,COUNT(*) FROM vaccination_records GROUP BY administered_by;
+SELECT vaccine_id,COUNT(*) FROM vaccination_records GROUP BY vaccine_id HAVING COUNT(*)>2;
+ALTER TABLE vaccination_records ADD COLUMN verified BOOLEAN DEFAULT FALSE;
+SELECT patient_id,batch_number FROM vaccination_records WHERE vaccination_date>'2024-06-01';
+select * from vaccination_records;
+
+#============================================================================================================================
+
+
+-- 9. Research_Projects
+CREATE TABLE research_projects (
+    project_id INT PRIMARY KEY,
+    project_name VARCHAR(150),
+    disease_id INT,
+    start_date DATE,
+    end_date DATE,
+    budget DECIMAL(15,2),
+    lead_scientist VARCHAR(100),
+    status VARCHAR(50),
+    findings TEXT,
+    funding_source VARCHAR(100),
+    FOREIGN KEY (disease_id) REFERENCES diseases(disease_id)
+);
+INSERT INTO research_projects VALUES
+(1, 'HIV Vaccine Development', 1, '2023-01-01', '2026-12-31', 5000000.00, 'Dr. Adams', 'Ongoing', 'Initial trials promising', 'WHO'),
+(2, 'TB Cure Initiative', 2, '2022-03-01', '2025-03-01', 3000000.00, 'Dr. Baker', 'Ongoing', 'Improved drug formula', 'Gates Foundation'),
+(3, 'Cancer Genomics Study', 3, '2021-05-15', '2024-05-15', 4500000.00, 'Dr. Carter', 'Completed', 'New genetic markers found', 'NIH'),
+(4, 'Diabetes Prevention Program', 4, '2022-07-10', '2025-07-10', 2500000.00, 'Dr. Daniels', 'Ongoing', 'Community outreach success', 'WHO'),
+(5, 'Malaria Eradication Research', 5, '2020-09-01', '2023-09-01', 4000000.00, 'Dr. Evans', 'Completed', 'Effective vaccine candidate', 'UNICEF'),
+(6, 'Ebola Antiviral Study', 6, '2021-10-01', '2024-10-01', 3500000.00, 'Dr. Flores', 'Ongoing', 'Promising lab results', 'WHO'),
+(7, 'Mental Health Support Systems', 7, '2022-02-01', '2025-02-01', 1500000.00, 'Dr. Garcia', 'Ongoing', 'Digital therapy tools developed', 'WHO'),
+(8, 'Child Nutrition Project', 8, '2023-04-15', '2026-04-15', 2800000.00, 'Dr. Harris', 'Ongoing', 'Nutritional supplements distributed', 'FAO'),
+(9, 'Air Pollution Health Impact Study', 9, '2021-08-20', '2024-08-20', 2000000.00, 'Dr. Irving', 'Completed', 'Linked PM2.5 to heart disease', 'UNEP'),
+(10, 'Rare Disease Database', 10, '2023-09-01', '2026-09-01', 1800000.00, 'Dr. Johnson', 'Ongoing', 'Global registry created', 'WHO');
+#queries:
+select * from research_projects;
+SELECT project_name,budget FROM research_projects WHERE status='Ongoing';
+SELECT disease_id,COUNT(*) FROM research_projects GROUP BY disease_id;
+SELECT AVG(budget) FROM research_projects;
+UPDATE research_projects SET status='Extended' WHERE end_date>'2025-12-31';
+DELETE FROM research_projects WHERE project_id=5;
+SELECT funding_source,SUM(budget) FROM research_projects GROUP BY funding_source;
+SELECT lead_scientist,COUNT(*) FROM research_projects GROUP BY lead_scientist;
+ALTER TABLE research_projects ADD COLUMN collaborators INT DEFAULT 0;
+SELECT project_name,end_date FROM research_projects ORDER BY end_date DESC;
+SELECT project_name,findings FROM research_projects WHERE status='Completed';
+select * from research_projects;
+
+#=============================================================================================================================
+-- 10. Funding
+CREATE TABLE funding (
+    funding_id INT PRIMARY KEY,
+    project_id INT,
+    donor_name VARCHAR(100),
+    country_id INT,
+    amount DECIMAL(15,2),
+    funding_date DATE,
+    currency VARCHAR(10),
+    purpose TEXT,
+    contact_email VARCHAR(100),
+    remarks TEXT,
+    FOREIGN KEY (project_id) REFERENCES research_projects(project_id),
+    FOREIGN KEY (country_id) REFERENCES countries(country_id)
+);
+INSERT INTO funding VALUES
+(1, 1, 'Gates Foundation', 1, 1000000.00, '2023-02-01', 'USD', 'Vaccine research', 'contact@gates.org', 'Phase 1 funding'),
+(2, 2, 'UNICEF', 2, 800000.00, '2023-03-05', 'USD', 'TB awareness', 'health@unicef.org', 'Annual grant'),
+(3, 3, 'NIH', 3, 1200000.00, '2023-04-10', 'USD', 'Cancer genomics', 'research@nih.gov', 'Yearly support'),
+(4, 4, 'WHO', 4, 900000.00, '2023-05-15', 'USD', 'Diabetes program', 'funding@who.int', 'Quarterly installment'),
+(5, 5, 'FAO', 5, 700000.00, '2023-06-20', 'USD', 'Malaria eradication', 'aid@fao.org', 'Final payment'),
+(6, 6, 'CDC', 6, 1100000.00, '2023-07-25', 'USD', 'Ebola study', 'cdc@cdc.gov', 'Ongoing project'),
+(7, 7, 'Global Fund', 7, 500000.00, '2023-08-30', 'USD', 'Mental health programs', 'global@fund.org', 'Pilot project'),
+(8, 8, 'UNDP', 8, 600000.00, '2023-09-04', 'USD', 'Child nutrition', 'undp@org', 'Year 1 allocation'),
+(9, 9, 'Green Earth Org', 9, 450000.00, '2023-10-10', 'USD', 'Air pollution research', 'contact@geo.org', 'Grant cycle'),
+(10, 10, 'WHO', 10, 400000.00, '2023-11-15', 'USD', 'Rare disease registry', 'funding@who.int', 'Initial funding');
+#queries:
+select * from funding;
+SELECT donor_name,amount FROM funding WHERE amount>800000;
+SELECT country_id,SUM(amount) FROM funding GROUP BY country_id;
+SELECT project_id,COUNT(*) FROM funding GROUP BY project_id;
+UPDATE funding SET remarks='Reviewed' WHERE funding_id=3;
+DELETE FROM funding WHERE funding_id=9;
+SELECT donor_name,AVG(amount) FROM funding GROUP BY donor_name;
+SELECT currency,SUM(amount) FROM funding GROUP BY currency;
+ALTER TABLE funding ADD COLUMN confirmed BOOLEAN DEFAULT TRUE;
+SELECT donor_name,MAX(amount) FROM funding GROUP BY donor_name;
+SELECT project_id,SUM(amount) FROM funding GROUP BY project_id HAVING SUM(amount)>1000000;
+select * from funding;
+
+
+#=================================================================================================================================
+-- 11. Awareness_Campaigns
+CREATE TABLE awareness_campaigns (
+    campaign_id INT PRIMARY KEY,
+    campaign_name VARCHAR(150),
+    country_id INT,
+    start_date DATE,
+    end_date DATE,
+    target_audience TEXT,
+    budget DECIMAL(15,2),
+    organizer VARCHAR(100),
+    media_channels TEXT,
+    outcome TEXT,
+    FOREIGN KEY (country_id) REFERENCES countries(country_id)
+);
+INSERT INTO awareness_campaigns 
+(campaign_id, campaign_name, country_id, start_date, end_date, target_audience, budget, organizer, media_channels, outcome) 
+VALUES
+(1, 'Anti-Smoking Awareness', 1, '2024-01-10', '2024-02-15', 'Youth and Adults', 500000.00, 'Health Ministry', 'TV, Radio, Social Media', 'Reduced smoking rates'),
+(2, 'COVID-19 Vaccination Drive', 2, '2023-03-01', '2023-12-31', 'All Citizens', 2000000.00, 'National Health Agency', 'TV, Print, Online', 'High vaccination coverage'),
+(3, 'Mental Health Week', 3, '2024-05-05', '2024-05-12', 'Students and Employees', 300000.00, 'Wellness NGO', 'Workshops, Social Media', 'Increased awareness on mental health'),
+(4, 'Breast Cancer Screening', 4, '2023-10-01', '2023-10-31', 'Women aged 25-50', 750000.00, 'Cancer Society', 'Hospitals, TV, Flyers', 'More early detections'),
+(5, 'Nutrition Awareness Program', 5, '2024-06-01', '2024-06-30', 'Children and Parents', 400000.00, 'Food Safety Dept', 'Schools, Social Media', 'Improved dietary habits'),
+(6, 'Road Safety Campaign', 6, '2024-07-15', '2024-08-15', 'Drivers and Pedestrians', 600000.00, 'Transport Authority', 'Billboards, Radio, TV', 'Reduced road accidents'),
+(7, 'HIV/AIDS Awareness', 7, '2023-12-01', '2023-12-31', 'Young Adults', 550000.00, 'Global Health Org', 'Posters, Online Ads, Seminars', 'Increased HIV testing'),
+(8, 'Clean Water Initiative', 8, '2024-04-01', '2024-09-30', 'Rural Villages', 1000000.00, 'WaterAid NGO', 'Community Events, Radio', 'Better access to clean water'),
+(9, 'Diabetes Prevention Drive', 9, '2024-02-01', '2024-02-28', 'Adults over 30', 650000.00, 'Diabetes Foundation', 'Hospitals, Online Ads', 'Increased awareness of diabetes risk'),
+(10, 'Child Vaccination Week', 10, '2024-09-01', '2024-09-07', 'Children under 5', 700000.00, 'UNICEF', 'Schools, Clinics, Radio', 'Higher child immunization rates');
+#queries:
+select * from awareness_campaigns;
+SELECT campaign_name,budget FROM awareness_campaigns WHERE budget>600000;
+SELECT country_id,COUNT(*) FROM awareness_campaigns GROUP BY country_id;
+SELECT organizer,SUM(budget) FROM awareness_campaigns GROUP BY organizer;
+UPDATE awareness_campaigns SET outcome='Successful' WHERE campaign_id=4;
+DELETE FROM awareness_campaigns WHERE campaign_id=7;
+SELECT AVG(budget) FROM awareness_campaigns;
+SELECT media_channels,COUNT(*) FROM awareness_campaigns GROUP BY media_channels;
+ALTER TABLE awareness_campaigns ADD COLUMN evaluation TEXT;
+SELECT campaign_name,end_date FROM awareness_campaigns ORDER BY end_date DESC;
+SELECT campaign_name,target_audience FROM awareness_campaigns WHERE start_date>'2024-06-01';
+select * from awareness_campaigns;
+
+
+#================================================================================================================================
+-- 12. Laboratories
+CREATE TABLE laboratories (
+    lab_id INT PRIMARY KEY,
+    lab_name VARCHAR(150),
+    country_id INT,
+    city VARCHAR(100),
+    established_year INT,
+    head_scientist VARCHAR(100),
+    research_focus TEXT,
+    accreditation VARCHAR(100),
+    phone VARCHAR(20),
+    email VARCHAR(100),
+    FOREIGN KEY (country_id) REFERENCES countries(country_id)
+);
+use Projects;
+INSERT INTO laboratories
+VALUES
+(1, 'Global Health Lab', 1, 'Delhi', 2001, 'Research', 'Dr. Rajesh Kumar', 150, '+91-9810000001', 'info@ghlab.org'),
+(2, 'BioMed Diagnostics', 2, 'Cairo', 1998, 'Diagnostic', 'Dr. Mona Youssef', 120, '+20-1000000002', 'contact@biomed.eg'),
+(3, 'MedTech Labs', 3, 'Berlin', 2005, 'Research', 'Dr. Hans Müller', 200, '+49-300000003', 'info@medtech.de'),
+(4, 'Life Sciences Center', 4, 'Tokyo', 2010, 'Research', 'Dr. Sato Hiroshi', 250, '+81-300000004', 'lsc@tokyo.jp'),
+(5, 'HealthCheck Labs', 5, 'London', 2003, 'Diagnostic', 'Dr. Emily Johnson', 180, '+44-700000005', 'support@healthcheck.uk'),
+(6, 'PathoCare', 6, 'Nairobi', 2012, 'Diagnostic', 'Dr. John Otieno', 100, '+254-700000006', 'pathocare@ke.org'),
+(7, 'MediScan', 7, 'Sydney', 2000, 'Research', 'Dr. Olivia Brown', 90, '+61-200000007', 'mediscan@au.org'),
+(8, 'Vital Labs', 8, 'Toronto', 2015, 'Diagnostic', 'Dr. Liam Smith', 75, '+1-600000008', 'vital@ca.org'),
+(9, 'CureTech', 9, 'New York', 2008, 'Research', 'Dr. Sarah White', 220, '+1-900000009', 'curetech@us.org'),
+(10, 'Wellness Labs', 10, 'Rio de Janeiro', 2004, 'Diagnostic', 'Dr. Ana Silva', 130, '+55-210000010', 'wellness@br.org');
+#queries:
+select * from laboratories;
+SELECT lab_name,city FROM laboratories WHERE established_year>2005;
+SELECT country_id,COUNT(*) FROM laboratories GROUP BY country_id;
+SELECT head_scientist,COUNT(*) FROM laboratories GROUP BY head_scientist;
+UPDATE laboratories SET email='updated@lab.org' WHERE lab_id=2;
+DELETE FROM laboratories WHERE lab_id=10;
+SELECT accreditation,COUNT(*) FROM laboratories GROUP BY accreditation;
+SELECT AVG(established_year) FROM laboratories;
+ALTER TABLE laboratories ADD COLUMN capacity INT DEFAULT 100;
+SELECT lab_name,phone FROM laboratories WHERE research_focus='Research';
+SELECT city,COUNT(*) FROM laboratories GROUP BY city HAVING COUNT(*)>1;
+select * from laboratories;
+
+#====================================================================================================================================
+-- 13. Lab_Tests
+CREATE TABLE lab_tests (
+    test_id INT PRIMARY KEY,
+    patient_id INT,
+    lab_id INT,
+    test_name VARCHAR(100),
+    test_date DATE,
+    result VARCHAR(50),
+    normal_range VARCHAR(50),
+    tested_by VARCHAR(100),
+    cost DECIMAL(10,2),
+    remarks TEXT,
+    FOREIGN KEY (patient_id) REFERENCES patients(patient_id),
+    FOREIGN KEY (lab_id) REFERENCES laboratories(lab_id)
+);
+INSERT INTO lab_tests 
+ VALUES
+(1, 1, 1, 'Blood Sugar', '2025-01-05', '110 mg/dL', '70-110 mg/dL', 'Dr. Alice Brown', 500.00, 'Normal'),
+(2, 2, 2, 'Cholesterol', '2025-01-06', '190 mg/dL', '<200 mg/dL', 'Dr. Mark Smith', 800.00, 'Slightly High'),
+(3, 3, 3, 'Hemoglobin', '2025-01-07', '13 g/dL', '12-15 g/dL', 'Dr. John White', 400.00, 'Normal'),
+(4, 4, 1, 'Liver Function', '2025-01-08', 'Normal', 'Normal', 'Dr. Alice Brown', 1200.00, 'Normal'),
+(5, 5, 2, 'Thyroid', '2025-01-09', '2.5 mIU/L', '0.5-4.5 mIU/L', 'Dr. Mark Smith', 1000.00, 'Normal'),
+(6, 6, 3, 'Urine Test', '2025-01-10', 'Clear', 'Clear', 'Dr. John White', 300.00, 'Normal'),
+(7, 7, 1, 'ECG', '2025-01-11', 'Normal', 'Normal', 'Dr. Alice Brown', 1500.00, 'Normal'),
+(8, 8, 2, 'Vitamin D', '2025-01-12', '25 ng/mL', '20-50 ng/mL', 'Dr. Mark Smith', 900.00, 'Low-Normal'),
+(9, 9, 3, 'Calcium', '2025-01-13', '9.5 mg/dL', '8.5-10.5 mg/dL', 'Dr. John White', 600.00, 'Normal'),
+(10, 10, 1, 'HIV Test', '2025-01-14', 'Negative', 'Negative', 'Dr. Alice Brown', 2000.00, 'Negative');
+#queries:
+select * from lab_tests;
+SELECT test_name,cost FROM lab_tests WHERE cost>1000;
+SELECT patient_id,COUNT(*) FROM lab_tests GROUP BY patient_id;
+SELECT lab_id,AVG(cost) FROM lab_tests GROUP BY lab_id;
+UPDATE lab_tests SET remarks='Recheck needed' WHERE result='Slightly High';
+DELETE FROM lab_tests WHERE test_id=8;
+SELECT tested_by,COUNT(*) FROM lab_tests GROUP BY tested_by;
+SELECT AVG(cost) FROM lab_tests;
+ALTER TABLE lab_tests ADD COLUMN verified varchar(70);
+SELECT test_name,result FROM lab_tests ORDER BY test_date DESC;
+SELECT test_name,COUNT(*) FROM lab_tests GROUP BY test_name HAVING COUNT(*)>1;
+select * from lab_tests;
+
+
+#==================================================================================================================================
+
+-- 14. Health_Programs
+CREATE TABLE health_programs (
+    program_id INT PRIMARY KEY,
+    program_name VARCHAR(150),
+    start_date DATE,
+    end_date DATE,
+    target_region VARCHAR(100),
+    budget DECIMAL(15,2),
+    funded_by VARCHAR(100),
+    managed_by VARCHAR(100),
+    objectives TEXT,
+    outcome TEXT
+);
+INSERT INTO health_programs (program_id, program_name, start_date, end_date, target_region, budget, funded_by, managed_by, objectives, outcome) VALUES
+(1, 'Immunization Drive', '2025-01-01', '2025-06-30', 'Asia', 5000000.00, 'UNICEF', 'WHO', 'Increase vaccination coverage', 'Ongoing'),
+(2, 'Malaria Eradication', '2025-02-01', '2025-12-31', 'Africa', 8000000.00, 'Bill & Melinda Gates Foundation', 'WHO', 'Reduce malaria cases', 'In Progress'),
+(3, 'Clean Water Project', '2025-03-01', '2026-03-01', 'South America', 3000000.00, 'WHO', 'WHO', 'Provide clean water access', 'In Progress'),
+(4, 'HIV Awareness', '2025-04-01', '2025-09-30', 'Global', 2000000.00, 'Global Fund', 'WHO', 'Increase HIV testing', 'Planned'),
+(5, 'Nutrition Program', '2025-05-01', '2026-05-01', 'Asia', 2500000.00, 'UNICEF', 'WHO', 'Reduce malnutrition', 'Ongoing'),
+(6, 'Cancer Screening', '2025-06-01', '2026-06-01', 'Europe', 6000000.00, 'WHO', 'WHO', 'Increase early detection', 'Planned'),
+(7, 'Mental Health Support', '2025-07-01', '2025-12-31', 'North America', 4000000.00, 'WHO', 'WHO', 'Provide counseling services', 'In Progress'),
+(8, 'Tuberculosis Control', '2025-08-01', '2026-08-01', 'Africa', 7000000.00, 'Global Fund', 'WHO', 'Reduce TB cases', 'Planned'),
+(9, 'Child Health Program', '2025-09-01', '2026-03-01', 'Asia', 3500000.00, 'UNICEF', 'WHO', 'Improve child healthcare', 'Ongoing'),
+(10, 'COVID-19 Recovery', '2025-10-01', '2026-10-01', 'Global', 9000000.00, 'WHO', 'WHO', 'Support post-COVID recovery', 'In Progress');
+#queries:
+select * from health_programs;
+SELECT program_name,budget FROM health_programs WHERE budget>5000000;
+SELECT target_region,COUNT(*) FROM health_programs GROUP BY target_region;
+SELECT funded_by,SUM(budget) FROM health_programs GROUP BY funded_by;
+UPDATE health_programs SET outcome='Extended' WHERE end_date>'2026-01-01';
+DELETE FROM health_programs WHERE program_id=4;
+SELECT AVG(budget) FROM health_programs;
+SELECT managed_by,COUNT(*) FROM health_programs GROUP BY managed_by;
+ALTER TABLE health_programs ADD COLUMN participants INT DEFAULT 0;
+SELECT program_name,end_date FROM health_programs ORDER BY end_date;
+SELECT program_name,outcome FROM health_programs WHERE outcome='Ongoing';
+select * from health_programs;
+
+
+#===================================================================================================================================
+
+-- 15. Program_Beneficiaries
+CREATE TABLE program_beneficiaries (
+    beneficiary_id INT PRIMARY KEY,
+    program_id INT,
+    name VARCHAR(100),
+    age INT,
+    gender CHAR(1),
+    country_id INT,
+    benefit_type VARCHAR(100),
+    received_date DATE,
+    remarks TEXT,
+    status VARCHAR(50),
+    FOREIGN KEY (program_id) REFERENCES health_programs(program_id),
+    FOREIGN KEY (country_id) REFERENCES countries(country_id)
+);
+INSERT INTO program_beneficiaries (beneficiary_id, program_id, name, age, gender, country_id, benefit_type, received_date, remarks, status) VALUES
+(1, 1, 'Ravi Kumar', 5, 'M', 1, 'Vaccination', '2025-02-10', 'Healthy', 'Completed'),
+(2, 1, 'Anita Sharma', 4, 'F', 1, 'Vaccination', '2025-02-12', 'Healthy', 'Completed'),
+(3, 2, 'John Doe', 35, 'M', 2, 'Medicine', '2025-03-01', 'Recovered', 'Completed'),
+(4, 2, 'Mary Jane', 29, 'F', 2, 'Medicine', '2025-03-05', 'Recovered', 'Completed'),
+(5, 3, 'Carlos Mendes', 40, 'M', 3, 'Clean Water Access', '2025-04-15', 'Improved Health', 'Ongoing'),
+(6, 4, 'Sarah Lee', 25, 'F', 4, 'HIV Test', '2025-05-20', 'Negative', 'Completed'),
+(7, 5, 'Raj Patel', 10, 'M', 1, 'Nutrition Pack', '2025-06-01', 'Healthy Weight', 'Ongoing'),
+(8, 6, 'Elena Rossi', 50, 'F', 5, 'Cancer Screening', '2025-07-10', 'Normal', 'Completed'),
+(9, 7, 'Michael Brown', 32, 'M', 6, 'Counseling', '2025-08-05', 'Improved', 'Ongoing'),
+(10, 8, 'Aisha Ali', 27, 'F', 2, 'TB Medicine', '2025-09-15', 'Recovering', 'Ongoing');
+#queries:
+select * from program_beneficiaries;
+SELECT name,age,gender FROM program_beneficiaries WHERE country_id=1;
+SELECT benefit_type,COUNT(*) FROM program_beneficiaries GROUP BY benefit_type;
+SELECT program_id,AVG(age) FROM program_beneficiaries GROUP BY program_id;
+UPDATE program_beneficiaries SET status='Completed' WHERE beneficiary_id=7;
+DELETE FROM program_beneficiaries WHERE remarks='Recovering';
+SELECT gender,COUNT(*) FROM program_beneficiaries GROUP BY gender;
+ALTER TABLE program_beneficiaries ADD COLUMN contact VARCHAR(20);
+SELECT name,received_date FROM program_beneficiaries WHERE received_date BETWEEN '2025-02-01' AND '2025-06-30';
+SELECT status,COUNT(*) FROM program_beneficiaries GROUP BY status HAVING COUNT(*)>2;
+select * from program_beneficiaries;
+
+
+#=================================================================================================================================
+-- 16. Health_Workers
+CREATE TABLE health_workers (
+    worker_id INT PRIMARY KEY,
+    first_name VARCHAR(50),
+    last_name VARCHAR(50),
+    gender CHAR(1),
+    country_id INT,
+    job_role VARCHAR(100),
+    experience_years INT,
+    phone VARCHAR(20),
+    email VARCHAR(100),
+    salary DECIMAL(12,2),
+    FOREIGN KEY (country_id) REFERENCES countries(country_id)
+);
+INSERT INTO health_workers (worker_id, first_name, last_name, gender, country_id, job_role, experience_years, phone, email, salary) VALUES
+(1, 'Alice', 'Brown', 'F', 1, 'Nurse', 5, '+91-9876543210', 'alice.brown@example.com', 40000.00),
+(2, 'Mark', 'Smith', 'M', 2, 'Doctor', 10, '+1-555-123456', 'mark.smith@example.com', 90000.00),
+(3, 'John', 'White', 'M', 3, 'Lab Technician', 8, '+55-21-98765432', 'john.white@example.com', 50000.00),
+(4, 'Emma', 'Taylor', 'F', 4, 'Surgeon', 12, '+44-20-12345678', 'emma.taylor@example.com', 120000.00),
+(5, 'David', 'Lee', 'M', 5, 'Pharmacist', 7, '+39-06-9876543', 'david.lee@example.com', 60000.00),
+(6, 'Sophia', 'Garcia', 'F', 6, 'Counselor', 6, '+33-1-23456789', 'sophia.garcia@example.com', 55000.00),
+(7, 'James', 'Brown', 'M', 1, 'Paramedic', 4, '+91-9123456789', 'james.brown@example.com', 35000.00),
+(8, 'Olivia', 'Wilson', 'F', 2, 'Midwife', 9, '+1-555-987654', 'olivia.wilson@example.com', 45000.00),
+(9, 'Liam', 'Davis', 'M', 3, 'Radiologist', 11, '+55-21-12345678', 'liam.davis@example.com', 80000.00),
+(10, 'Mia', 'Martinez', 'F', 4, 'Dentist', 5, '+44-20-98765432', 'mia.martinez@example.com', 70000.00);
+#queries:
+select * from health_workers;
+SELECT first_name,last_name,job_role FROM health_workers WHERE salary>60000;
+SELECT country_id,AVG(salary) FROM health_workers GROUP BY country_id;
+UPDATE health_workers SET salary=salary*1.05 WHERE experience_years>10;
+DELETE FROM health_workers WHERE job_role='Paramedic';
+ALTER TABLE health_workers ADD COLUMN hire_date DATE;
+SELECT job_role,COUNT(*) FROM health_workers GROUP BY job_role;
+SELECT gender,AVG(experience_years) FROM health_workers GROUP BY gender;
+SELECT MAX(salary) AS highest_salary FROM health_workers;
+SELECT job_role,AVG(salary) FROM health_workers GROUP BY job_role HAVING AVG(salary)>50000;
+select * from health_workers;
+
+
+#===================================================================================================================================
+-- 17. Disease_Outbreaks
+CREATE TABLE disease_outbreaks (
+    outbreak_id INT PRIMARY KEY,
+    disease_id INT,
+    country_id INT,
+    start_date DATE,
+    end_date DATE,
+    cases_reported INT,
+    deaths INT,
+    recovery_rate DECIMAL(5,2),
+    cause TEXT,
+    response_measures TEXT,
+    FOREIGN KEY (disease_id) REFERENCES diseases(disease_id),
+    FOREIGN KEY (country_id) REFERENCES countries(country_id)
+);
+INSERT INTO disease_outbreaks (outbreak_id, disease_id, country_id, start_date, end_date, cases_reported, deaths, recovery_rate, cause, response_measures) VALUES
+(1, 1, 1, '2025-01-01', '2025-01-15', 200, 5, 97.50, 'Contaminated Water', 'Water purification'),
+(2, 2, 2, '2025-02-01', '2025-02-20', 500, 20, 96.00, 'Mosquitoes', 'Fumigation'),
+(3, 3, 3, '2025-03-01', '2025-03-10', 150, 2, 98.70, 'Virus Spread', 'Quarantine'),
+(4, 4, 4, '2025-04-01', '2025-04-15', 300, 15, 95.00, 'Airborne', 'Mask distribution'),
+(5, 5, 5, '2025-05-01', '2025-05-30', 400, 50, 87.50, 'Food Contamination', 'Food inspection'),
+(6, 6, 6, '2025-06-01', '2025-06-25', 600, 40, 93.33, 'Bacteria', 'Medical treatment'),
+(7, 7, 1, '2025-07-01', '2025-07-20', 250, 10, 96.00, 'Virus Mutation', 'Vaccination'),
+(8, 8, 2, '2025-08-01', '2025-08-18', 350, 25, 92.85, 'Air Pollution', 'Mask distribution'),
+(9, 9, 3, '2025-09-01', '2025-09-12', 100, 3, 97.00, 'Water Contamination', 'Water filters'),
+(10, 10, 4, '2025-10-01', '2025-10-25', 450, 30, 93.33, 'Virus Spread', 'Lockdown');
+#queries:
+select * from diseases_outbreaks;
+SELECT disease_id,country_id,cases_reported FROM disease_outbreaks WHERE cases_reported>300;
+SELECT disease_id,SUM(deaths) FROM disease_outbreaks GROUP BY disease_id;
+UPDATE disease_outbreaks SET response_measures='Vaccination and Quarantine' WHERE outbreak_id=3;
+DELETE FROM disease_outbreaks WHERE recovery_rate<90.00;
+ALTER TABLE disease_outbreaks ADD COLUMN reported_by VARCHAR(100);
+SELECT country_id,AVG(recovery_rate) FROM disease_outbreaks GROUP BY country_id;
+SELECT disease_id,MAX(cases_reported) FROM disease_outbreaks GROUP BY disease_id;
+SELECT disease_id,AVG(deaths) FROM disease_outbreaks GROUP BY disease_id HAVING AVG(deaths)>20;
+SELECT outbreak_id,end_date-start_date AS duration FROM disease_outbreaks;
+select * from disease_outbreaks;
+
+#====================================================================================================================================
+-- 18. Medical_Supplies
+CREATE TABLE medical_supplies (
+    supply_id INT PRIMARY KEY,
+    supply_name VARCHAR(100),
+    category VARCHAR(50),
+    quantity INT,
+    unit_price DECIMAL(10,2),
+    supplier_id INT,
+    manufacture_date DATE,
+    expiry_date DATE,
+    storage_conditions TEXT,
+    notes TEXT,
+    FOREIGN KEY (supplier_id) REFERENCES suppliers(supplier_id)
+);
+INSERT INTO medical_supplies 
+(supply_id, supply_name, category, quantity, unit_price, supplier_id, manufacture_date, expiry_date, storage_conditions, notes) VALUES
+(1, 'Surgical Masks', 'PPE', 5000, 0.50, 1, '2025-01-01', '2027-01-01', 'Cool, dry place', 'For hospital use'),
+(2, 'Gloves', 'PPE', 10000, 0.10, 2, '2025-02-10', '2026-02-10', 'Room temperature', 'Latex-free'),
+(3, 'Hand Sanitizer', 'Hygiene', 2000, 3.00, 1, '2025-03-15', '2027-03-15', 'Avoid sunlight', 'Alcohol-based'),
+(4, 'Ventilators', 'Equipment', 50, 25000.00, 3, '2025-01-20', '2030-01-20', 'Indoor, dust-free', 'ICU use'),
+(5, 'Face Shields', 'PPE', 3000, 2.00, 4, '2025-04-01', '2028-04-01', 'Cool, dry place', 'Reusable'),
+(6, 'Thermometers', 'Equipment', 150, 20.00, 2, '2025-01-05', '2029-01-05', 'Avoid moisture', 'Digital'),
+(7, 'Oxygen Cylinders', 'Equipment', 100, 150.00, 5, '2025-05-01', '2030-05-01', 'Indoor storage', 'Full tank'),
+(8, 'Syringes', 'Medical', 8000, 0.20, 1, '2025-06-10', '2028-06-10', 'Dry storage', 'Disposable'),
+(9, 'IV Fluids', 'Medical', 2000, 5.00, 3, '2025-07-01', '2026-07-01', 'Cool place', 'Sterile'),
+(10, 'Defibrillators', 'Equipment', 20, 1200.00, 4, '2025-01-15', '2035-01-15', 'Indoor, cool', 'Emergency use');
+#queries:
+select * from medical_supplies;
+SELECT supply_name,quantity,unit_price FROM medical_supplies WHERE category='PPE';
+SELECT supplier_id,SUM(quantity) FROM medical_supplies GROUP BY supplier_id;
+UPDATE medical_supplies SET quantity=quantity-100 WHERE supply_id=1;
+DELETE FROM medical_supplies WHERE expiry_date<'2026-01-01';
+ALTER TABLE medical_supplies ADD COLUMN batch_no VARCHAR(50);
+SELECT category,AVG(unit_price) FROM medical_supplies GROUP BY category;
+SELECT MAX(unit_price) AS max_price FROM medical_supplies;
+SELECT category,SUM(quantity) FROM medical_supplies GROUP BY category HAVING SUM(quantity)>500;
+SELECT supply_name,expiry_date-manufacture_date AS shelf_life FROM medical_supplies;
+select * from medical_supplies;
+
+#==========================================================================================================================
+-- 19. Suppliers
+CREATE TABLE suppliers (
+    supplier_id INT PRIMARY KEY,
+    supplier_name VARCHAR(100),
+    country_id INT,
+    contact_name VARCHAR(100),
+    phone VARCHAR(20),
+    email VARCHAR(100),
+    address TEXT,
+    city VARCHAR(50),
+    state VARCHAR(50),
+    postal_code VARCHAR(20),
+    FOREIGN KEY (country_id) REFERENCES countries(country_id)
+);
+INSERT INTO suppliers
+(supplier_id, supplier_name, country_id, contact_name, phone, email, address, city, state, postal_code) VALUES
+(1, 'MediSupply Co.', 1, 'John Carter', '+123456789', 'john@medisupply.com', '123 Health St', 'New York', 'NY', '10001'),
+(2, 'SafeCare Ltd.', 2, 'Anna Smith', '+44123456789', 'anna@safecare.com', '45 Wellness Ave', 'London', 'London', 'EC1A'),
+(3, 'LifeEquip Inc.', 3, 'Robert Brown', '+6123456789', 'robert@lifeequip.com', '78 Medical Rd', 'Sydney', 'NSW', '2000'),
+(4, 'HealthFirst', 4, 'Emily Johnson', '+33123456789', 'emily@healthfirst.fr', '22 Rue Santé', 'Paris', 'Île-de-France', '75001'),
+(5, 'GlobalMed', 5, 'David Wilson', '+911234567890', 'david@globalmed.in', '56 Care Blvd', 'Mumbai', 'MH', '400001'),
+(6, 'MediPro', 6, 'Sarah Lee', '+82123456789', 'sarah@medipro.kr', '89 Healing St', 'Seoul', 'Seoul', '04524'),
+(7, 'BioSafe', 7, 'Michael Chen', '+861234567890', 'michael@biosafe.cn', '33 Pharma Rd', 'Beijing', 'BJ', '100000'),
+(8, 'SafeMeds', 8, 'Laura Garcia', '+34123456789', 'laura@safemeds.es', '77 Salud Ave', 'Madrid', 'Madrid', '28001'),
+(9, 'MediWorld', 9, 'Tom Baker', '+55123456789', 'tom@mediworld.br', '14 Vida St', 'Rio', 'RJ', '20000'),
+(10, 'CareLink', 10, 'Linda Davis', '+27123456789', 'linda@carelink.za', '101 Wellness Dr', 'Cape Town', 'WC', '8000');
+#queries:
+select * from suppliers;
+SELECT supplier_name,contact_name,phone FROM suppliers WHERE country_id=1;
+SELECT country_id,COUNT(*) FROM suppliers GROUP BY country_id;
+UPDATE suppliers SET city='New Delhi' WHERE supplier_id=5;
+DELETE FROM suppliers WHERE city='Rio';
+ALTER TABLE suppliers ADD COLUMN website VARCHAR(100);
+SELECT state,COUNT(*) FROM suppliers GROUP BY state;
+SELECT MAX(supplier_id) AS latest_supplier FROM suppliers;
+SELECT city,COUNT(*) FROM suppliers GROUP BY city HAVING COUNT(*)>1;
+SELECT supplier_name,email FROM suppliers WHERE email LIKE '%.com';
+select * from suppliers;
+#==================================================================================================================================
+-- 20. Training_Programs
+CREATE TABLE training_programs (
+    training_id INT PRIMARY KEY,
+    training_name VARCHAR(150),
+    start_date DATE,
+    end_date DATE,
+    topic VARCHAR(100),
+    instructor VARCHAR(100),
+    country_id INT,
+    participants INT,
+    budget DECIMAL(12,2),
+    outcome TEXT,
+    FOREIGN KEY (country_id) REFERENCES countries(country_id)
+);
+INSERT INTO training_programs
+(training_id, training_name, start_date, end_date, topic, instructor, country_id, participants, budget, outcome) VALUES
+(1, 'Basic First Aid', '2025-01-05', '2025-01-10', 'First Aid', 'Dr. Smith', 1, 50, 5000.00, 'Completed'),
+(2, 'Disaster Management', '2025-02-01', '2025-02-15', 'Emergency Response', 'Dr. Lee', 2, 30, 8000.00, 'Successful'),
+(3, 'Infection Control', '2025-03-10', '2025-03-20', 'Hygiene', 'Dr. Kim', 3, 40, 6000.00, 'Ongoing'),
+(4, 'Advanced Nursing', '2025-04-01', '2025-04-30', 'Nursing', 'Dr. Brown', 4, 25, 10000.00, 'Completed'),
+(5, 'CPR Certification', '2025-05-05', '2025-05-07', 'Resuscitation', 'Dr. Adams', 5, 60, 3000.00, 'Successful'),
+(6, 'Mental Health Awareness', '2025-06-01', '2025-06-10', 'Psychology', 'Dr. Allen', 6, 45, 7000.00, 'Completed'),
+(7, 'Epidemiology Basics', '2025-07-01', '2025-07-15', 'Epidemiology', 'Dr. Davis', 7, 35, 9000.00, 'Successful'),
+(8, 'Maternal Care', '2025-08-01', '2025-08-20', 'Maternal Health', 'Dr. Wilson', 8, 20, 4000.00, 'Ongoing'),
+(9, 'Field Surgery', '2025-09-01', '2025-09-10', 'Surgery', 'Dr. Thomas', 9, 15, 15000.00, 'Completed'),
+(10, 'Nutrition Education', '2025-10-01', '2025-10-15', 'Nutrition', 'Dr. Green', 10, 50, 5000.00, 'Successful');
+#queries:
+select * from training_programs;
+SELECT training_name,participants FROM training_programs WHERE budget>6000;
+SELECT country_id,AVG(participants) FROM training_programs GROUP BY country_id;
+UPDATE training_programs SET outcome='Extended' WHERE training_id=8;
+DELETE FROM training_programs WHERE participants<20;
+ALTER TABLE training_programs ADD COLUMN sponsor VARCHAR(100);
+SELECT topic,COUNT(*) FROM training_programs GROUP BY topic;
+SELECT MAX(budget) AS max_budget FROM training_programs;
+SELECT topic,AVG(budget) FROM training_programs GROUP BY topic HAVING AVG(budget)>6000;
+SELECT training_name,end_date-start_date AS duration FROM training_programs;
+select * from training_programs;
+
+#================================================================================================================================
+-- 21. Participants
+CREATE TABLE participants (
+    participant_id INT PRIMARY KEY,
+    training_id INT,
+    name VARCHAR(100),
+    gender CHAR(1),
+    age INT,
+    country_id INT,
+    email VARCHAR(100),
+    phone VARCHAR(20),
+    role VARCHAR(50),
+    remarks TEXT,
+    FOREIGN KEY (training_id) REFERENCES training_programs(training_id),
+    FOREIGN KEY (country_id) REFERENCES countries(country_id)
+);
+ 
+INSERT INTO participants (participant_id, training_id, name, gender, age, country_id, email, phone, role, remarks) VALUES
+(1, 101, 'John Smith', 'M', 34, 1, 'john.smith@example.com', '+1234567890', 'Doctor', 'Excellent engagement'),
+(2, 102, 'Maria Garcia', 'F', 29, 2, 'maria.garcia@example.com', '+9876543210', 'Nurse', 'Quick learner'),
+(3, 103, 'Ali Khan', 'M', 40, 3, 'ali.khan@example.com', '+1122334455', 'Coordinator', 'Needs improvement in time management'),
+(4, 101, 'Linda Johnson', 'F', 35, 4, 'linda.j@example.com', '+4433221100', 'Health Worker', 'Very dedicated'),
+(5, 102, 'Chen Wei', 'M', 28, 5, 'chen.wei@example.com', '+5566778899', 'Researcher', 'Strong analytical skills'),
+(6, 103, 'Fatima Noor', 'F', 32, 6, 'fatima.noor@example.com', '+9988776655', 'Trainer', 'Highly interactive'),
+(7, 101, 'James Brown', 'M', 38, 7, 'james.brown@example.com', '+6677889900', 'Data Analyst', 'Good with statistics'),
+(8, 102, 'Sofia Rossi', 'F', 30, 8, 'sofia.rossi@example.com', '+3344556677', 'Consultant', 'Provides innovative ideas'),
+(9, 103, 'Omar Abdullah', 'M', 45, 9, 'omar.abdullah@example.com', '+2211334455', 'Field Officer', 'Excellent leadership'),
+(10, 101, 'Emily Davis', 'F', 27, 10, 'emily.davis@example.com', '+7788990011', 'Technician', 'Fast learner');
+#queries:
+select * from participants;
+SELECT name,age,role FROM participants WHERE role='Doctor';
+SELECT training_id,COUNT(*) FROM participants GROUP BY training_id;
+UPDATE participants SET remarks='Excellent' WHERE participant_id=5;
+DELETE FROM participants WHERE role='Technician';
+ALTER TABLE participants ADD COLUMN attendance VARCHAR(20);
+SELECT gender,COUNT(*) FROM participants GROUP BY gender;
+SELECT MAX(age) AS oldest FROM participants;
+SELECT role,AVG(age) FROM participants GROUP BY role HAVING AVG(age)>30;
+SELECT name,email FROM participants WHERE email LIKE '%example.com';
+select * from participants;
+
+
+#================================================================================================================================
+-- 22. Emergency_Responses
+CREATE TABLE emergency_responses (
+    response_id INT PRIMARY KEY,
+    disaster_type VARCHAR(100),
+    country_id INT,
+    start_date DATE,
+    end_date DATE,
+    affected_population INT,
+    relief_funds DECIMAL(15,2),
+    coordinator VARCHAR(100),
+    response_team TEXT,
+    outcome TEXT,
+    FOREIGN KEY (country_id) REFERENCES countries(country_id)
+);
+
+INSERT INTO emergency_responses (response_id, disaster_type, country_id, start_date, end_date, affected_population, relief_funds, coordinator, response_team, outcome) VALUES
+(1, 'Flood', 1, '2023-02-10', '2023-03-15', 50000, 2500000.00, 'Mark Evans', 'Team A', 'Rescue operations successful'),
+(2, 'Earthquake', 2, '2023-06-05', '2023-07-01', 120000, 5000000.00, 'Sara Ali', 'Team B', 'Reconstruction ongoing'),
+(3, 'Cyclone', 3, '2023-09-12', '2023-10-10', 80000, 3000000.00, 'David Lee', 'Team C', 'Most victims relocated'),
+(4, 'Pandemic', 4, '2020-03-01', '2022-01-31', 2000000, 15000000.00, 'Rita Gomez', 'Team D', 'Vaccination campaign completed'),
+(5, 'Wildfire', 5, '2023-04-20', '2023-05-15', 30000, 2000000.00, 'Tom Wright', 'Team E', 'Fire contained'),
+(6, 'Tsunami', 6, '2022-12-05', '2023-01-20', 150000, 8000000.00, 'Priya Kumar', 'Team F', 'Relief distributed'),
+(7, 'Landslide', 7, '2023-07-18', '2023-08-05', 25000, 1200000.00, 'Ahmed Hassan', 'Team G', 'Rescue completed'),
+(8, 'Drought', 8, '2023-01-01', '2023-12-31', 100000, 4000000.00, 'Elena Petrova', 'Team H', 'Water supply restored'),
+(9, 'Chemical Spill', 9, '2023-10-25', '2023-11-10', 5000, 900000.00, 'George Wilson', 'Team I', 'Area decontaminated'),
+(10, 'Hurricane', 10, '2023-08-15', '2023-09-05', 70000, 3500000.00, 'Isabella Cruz', 'Team J', 'Rehabilitation in progress');
+#queries:
+select * from emergency_responses;
+SELECT disaster_type,affected_population FROM emergency_responses WHERE relief_funds>3000000;
+SELECT country_id,SUM(relief_funds) FROM emergency_responses GROUP BY country_id;
+UPDATE emergency_responses SET outcome='Ongoing Support' WHERE response_id=9;
+DELETE FROM emergency_responses WHERE affected_population<10000;
+ALTER TABLE emergency_responses ADD COLUMN priority_level VARCHAR(20);
+SELECT disaster_type,COUNT(*) FROM emergency_responses GROUP BY disaster_type;
+SELECT MAX(affected_population) AS worst_case FROM emergency_responses;
+SELECT disaster_type,AVG(relief_funds) FROM emergency_responses GROUP BY disaster_type HAVING AVG(relief_funds)>2000000;
+SELECT response_id,end_date-start_date AS duration FROM emergency_responses;
+select * from emergency_responses;
+#=====================================================================================================================================
+
+-- 23. WHO_Staff
+CREATE TABLE who_staff (
+    staff_id INT PRIMARY KEY,
+    first_name VARCHAR(50),
+    last_name VARCHAR(50),
+    gender CHAR(1),
+    job_title VARCHAR(100),
+    department VARCHAR(100),
+    country_id INT,
+    phone VARCHAR(20),
+    email VARCHAR(100),
+    salary DECIMAL(12,2),
+    FOREIGN KEY (country_id) REFERENCES countries(country_id)
+);
+
+INSERT INTO who_staff (staff_id, first_name, last_name, gender, job_title, department, country_id, phone, email, salary) VALUES
+(1, 'Michael', 'Scott', 'M', 'Director', 'Management', 1, '+123456789', 'm.scott@who.int', 95000.00),
+(2, 'Pam', 'Beesly', 'F', 'Coordinator', 'Programs', 2, '+987654321', 'p.beesly@who.int', 65000.00),
+(3, 'Jim', 'Halpert', 'M', 'Analyst', 'Data', 3, '+112233445', 'j.halpert@who.int', 72000.00),
+(4, 'Dwight', 'Schrute', 'M', 'Supervisor', 'Logistics', 4, '+556677889', 'd.schrute@who.int', 70000.00),
+(5, 'Angela', 'Martin', 'F', 'Accountant', 'Finance', 5, '+998877665', 'a.martin@who.int', 68000.00),
+(6, 'Stanley', 'Hudson', 'M', 'Trainer', 'Capacity Building', 6, '+667788990', 's.hudson@who.int', 66000.00),
+(7, 'Kelly', 'Kapoor', 'F', 'PR Officer', 'Communications', 7, '+334455667', 'k.kapoor@who.int', 64000.00),
+(8, 'Ryan', 'Howard', 'M', 'IT Officer', 'Technology', 8, '+221133445', 'r.howard@who.int', 70000.00),
+(9, 'Toby', 'Flenderson', 'M', 'HR Manager', 'Human Resources', 9, '+778899001', 't.flenderson@who.int', 75000.00),
+(10, 'Erin', 'Hannon', 'F', 'Assistant', 'Administration', 10, '+445566778', 'e.hannon@who.int', 60000.00);
+#queries:
+select * from who_staff;
+SELECT first_name,last_name,job_title FROM who_staff WHERE gender='F';
+SELECT department,AVG(salary) AS avg_salary FROM who_staff GROUP BY department;
+SELECT country_id,COUNT(staff_id) AS total_staff FROM who_staff GROUP BY country_id;
+SELECT * FROM who_staff ORDER BY salary DESC LIMIT 3;
+UPDATE who_staff SET salary=salary+5000 WHERE job_title='Analyst';
+DELETE FROM who_staff WHERE last_name='Howard';
+ALTER TABLE who_staff ADD COLUMN hire_date DATE DEFAULT '2020-01-01';
+SELECT job_title,MAX(salary) FROM who_staff GROUP BY job_title;
+SELECT department,COUNT(staff_id) FROM who_staff GROUP BY department HAVING COUNT(staff_id)>1;
+select * from who_staff;
+#=======================================================================================================================================
+-- 24. Reports
+CREATE TABLE reports (
+    report_id INT PRIMARY KEY,
+    title VARCHAR(150),
+    author VARCHAR(100),
+    country_id INT,
+    publish_date DATE,
+    category VARCHAR(50),
+    summary TEXT,
+    file_url VARCHAR(200),
+    pages INT,
+    language VARCHAR(50),
+    FOREIGN KEY (country_id) REFERENCES countries(country_id)
+);
+
+INSERT INTO reports (report_id, title, author, country_id, publish_date, category, summary, file_url, pages, language) VALUES
+(1, 'Global Health Overview 2023', 'WHO Editorial', 1, '2023-01-15', 'Annual Report', 'Summary of global health indicators.', 'http://who.int/reports/2023overview.pdf', 120, 'English'),
+(2, 'Vaccination Progress', 'Dr. Sarah Lee', 2, '2023-03-10', 'Vaccination', 'Updates on vaccination campaigns.', 'http://who.int/reports/vaccine2023.pdf', 80, 'English'),
+(3, 'Pandemic Preparedness', 'John Carter', 3, '2023-05-20', 'Emergency', 'Guidelines for pandemic readiness.', 'http://who.int/reports/pandemic2023.pdf', 150, 'English'),
+(4, 'Water Sanitation', 'Mary Johnson', 4, '2023-07-01', 'Sanitation', 'Improving water sanitation systems.', 'http://who.int/reports/water2023.pdf', 100, 'French'),
+(5, 'Child Health', 'Fatima Noor', 5, '2023-09-05', 'Child Care', 'Report on global child health.', 'http://who.int/reports/child2023.pdf', 90, 'English'),
+(6, 'Mental Health Awareness', 'James Smith', 6, '2023-10-12', 'Mental Health', 'Raising awareness for mental health.', 'http://who.int/reports/mental2023.pdf', 70, 'English'),
+(7, 'Nutrition Trends', 'Olivia Brown', 7, '2023-08-15', 'Nutrition', 'Tracking dietary habits globally.', 'http://who.int/reports/nutrition2023.pdf', 60, 'Spanish'),
+(8, 'Disease Surveillance', 'David Chen', 8, '2023-04-18', 'Epidemiology', 'Monitoring disease outbreaks.', 'http://who.int/reports/disease2023.pdf', 85, 'English'),
+(9, 'Air Quality Analysis', 'Elena Petrova', 9, '2023-02-22', 'Environment', 'Assessing global air quality.', 'http://who.int/reports/air2023.pdf', 95, 'Russian'),
+(10, 'Global Immunization Review', 'George Wilson', 10, '2023-06-28', 'Vaccination', 'Immunization progress worldwide.', 'http://who.int/reports/immunization2023.pdf', 110, 'English');
+#queries:
+select * from reports;
+SELECT title,author,publish_date FROM reports WHERE category='Vaccination';
+SELECT category,COUNT(report_id) AS total_reports FROM reports GROUP BY category;
+SELECT country_id,AVG(pages) AS avg_pages FROM reports GROUP BY country_id;
+SELECT * FROM reports ORDER BY publish_date DESC LIMIT 5;
+UPDATE reports SET language='French' WHERE report_id=5;
+DELETE FROM reports WHERE category='Nutrition';
+ALTER TABLE reports ADD COLUMN reviewed_by VARCHAR(100);
+SELECT language,COUNT(report_id) FROM reports GROUP BY language;
+SELECT category,MAX(pages) FROM reports GROUP BY category HAVING MAX(pages)>100;
+select * from reports;
+#================================================================================================================================
+-- 25. Global_Statistics
+CREATE TABLE global_statistics (
+    stat_id INT PRIMARY KEY,
+    year INT,
+    global_population BIGINT,
+    global_life_expectancy DECIMAL(5,2),
+    global_health_budget DECIMAL(15,2),
+    total_disease_cases BIGINT,
+    total_vaccinations BIGINT,
+    global_death_rate DECIMAL(5,2),
+    top_disease VARCHAR(100),
+    remarks TEXT
+);
+INSERT INTO global_statistics (stat_id, year, global_population, global_life_expectancy, global_health_budget, total_disease_cases, total_vaccinations, global_death_rate, top_disease, remarks) VALUES
+(1, 2015, 7400000000, 71.5, 8000000000.00, 500000000, 3000000000, 7.5, 'Malaria', 'Steady improvements in healthcare'),
+(2, 2016, 7500000000, 71.8, 8200000000.00, 490000000, 3100000000, 7.4, 'Tuberculosis', 'Better vaccination coverage'),
+(3, 2017, 7600000000, 72.0, 8400000000.00, 480000000, 3200000000, 7.3, 'HIV/AIDS', 'Awareness programs increasing'),
+(4, 2018, 7700000000, 72.3, 8600000000.00, 470000000, 3300000000, 7.2, 'Influenza', 'New vaccines introduced'),
+(5, 2019, 7800000000, 72.6, 8800000000.00, 460000000, 3400000000, 7.1, 'COVID-19', 'Initial outbreak phase'),
+(6, 2020, 7900000000, 72.0, 9000000000.00, 1000000000, 3500000000, 7.9, 'COVID-19', 'Pandemic peak'),
+(7, 2021, 8000000000, 72.4, 9200000000.00, 800000000, 3600000000, 7.6, 'COVID-19', 'Mass vaccination campaigns'),
+(8, 2022, 8100000000, 72.8, 9400000000.00, 600000000, 3700000000, 7.2, 'Influenza', 'Post-pandemic recovery'),
+(9, 2023, 8200000000, 73.1, 9600000000.00, 550000000, 3800000000, 7.0, 'Malaria', 'Focus on tropical diseases'),
+(10, 2024, 8300000000, 73.4, 9800000000.00, 530000000, 3900000000, 6.9, 'Tuberculosis', 'Improved medical access');
+#queries:]
+select * from global_statistics;
+SELECT year,global_population,global_life_expectancy FROM global_statistics WHERE year>=2020;
+SELECT AVG(global_life_expectancy) AS avg_life FROM global_statistics;
+SELECT year,total_vaccinations,total_disease_cases FROM global_statistics ORDER BY year;
+SELECT top_disease,COUNT(stat_id) FROM global_statistics GROUP BY top_disease;
+UPDATE global_statistics SET remarks='Updated Data' WHERE year=2019;
+DELETE FROM global_statistics WHERE year=2015;
+ALTER TABLE global_statistics ADD COLUMN data_verified BOOLEAN DEFAULT TRUE;
+SELECT year,global_death_rate FROM global_statistics WHERE global_death_rate>7.5;
+SELECT * FROM global_statistics ORDER BY global_life_expectancy DESC LIMIT 1;
+select * from global_statistics;
